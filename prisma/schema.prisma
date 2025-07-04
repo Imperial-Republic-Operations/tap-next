@@ -1,0 +1,1015 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// User
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  username      String    @unique
+  email         String    @unique
+  emailVerified DateTime?
+  nexusId       BigInt    @unique
+  image         String?
+  role          Role      @default(PLAYER)
+
+  accounts Account[]
+  sessions Session[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  settings      UserSettings?
+  team          Team?
+  teams         Team[]         @relation("teamMember")
+  characters    Character[]
+  approvalCodes CodeGen[]
+  documents     GameDocument[]
+  notifications Notification[]
+}
+
+model UserSettings {
+  id                 BigInt     @id @default(autoincrement())
+  language           String     @default("en")
+  dateFormat         DateFormat @default(YYYYMMDD)
+  timeFormat         TimeFormat @default(TWENTY_FOUR)
+  emailNotifications Boolean    @default(false)
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  defaultCharacterId BigInt?    @unique
+  defaultCharacter   Character? @relation(fields: [defaultCharacterId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                       String  @id @default(cuid())
+  userId                   String  @unique
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String? @db.Text
+  access_token             String? @db.Text
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String? @db.Text
+  session_state            String?
+  refresh_token_expires_in Int?
+  user                     User?   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Team {
+  id              BigInt @id @default(autoincrement())
+  name            String @unique
+  abbreviation    String @unique
+  currentSequence Int    @default(0)
+
+  adminId String? @unique
+  admin   User?   @relation(fields: [adminId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  documents GameDocument[]
+  members   User[]         @relation("teamMember")
+}
+
+enum Role {
+  SYSTEM_ADMIN
+  ADMIN
+  ASSISTANT_ADMIN
+  GAME_MODERATOR
+  STAFF
+  PLAYER
+  BANNED
+}
+
+enum DateFormat {
+  MMDDYYYY
+  DDMMYYYY
+  YYYYMMDD
+}
+
+enum TimeFormat {
+  TWELVE
+  TWENTY_FOUR
+}
+
+// Organization
+model Organization {
+  id           BigInt           @id @default(autoincrement())
+  name         String
+  abbreviation String
+  type         OrganizationType
+
+  parentId BigInt?
+  parent   Organization?  @relation("OrgParentChild", fields: [parentId], references: [id])
+  children Organization[] @relation("OrgParentChild")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ranks         Rank[]
+  positions     Position[]
+  members       Member[]
+  documents     OrganizationDocument[]
+  sequences     DocumentSequence[]
+  creditAccount CreditAccount?
+  inventory     Inventory?
+  awards        Award[]
+}
+
+model Rank {
+  id           BigInt   @id @default(autoincrement())
+  name         String
+  abbreviation String
+  tier         RankTier
+  level        Int
+  salary       Int      @default(0)
+
+  organizationId BigInt
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members Member[]
+}
+
+model Position {
+  id        BigInt  @id @default(autoincrement())
+  name      String
+  exclusive Boolean @default(true)
+  stipend   Int     @default(0)
+
+  organizationId BigInt
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members     Member[]
+  permissions PositionPermission[]
+}
+
+model PositionPermission {
+  id    BigInt     @id @default(autoincrement())
+  value Permission
+
+  positionId BigInt
+  position   Position @relation(fields: [positionId], references: [id])
+}
+
+enum Permission {
+  LEADER
+  SECOND_IN_COMMAND
+  LEADERSHIP
+  MANAGE_MEMBERS
+  MANAGE_POSITIONS
+  MANAGE_ASSETS
+  MANAGE_RANKS
+  MANAGE_REPORTS
+  OVERRIDE_SECURITY
+  MANAGE_SECURITY
+  MONITOR_ACTIVITY
+}
+
+model SecurityClearance {
+  id   BigInt @id @default(autoincrement())
+  name String @unique
+  tier Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  characters        Character[]
+  listOrganizations OrganizationDocument[] @relation("listClearance")
+  viewOrganizations OrganizationDocument[] @relation("viewClearance")
+}
+
+model Member {
+  id                BigInt  @id @default(autoincrement())
+  primaryMembership Boolean @default(false)
+
+  characterId BigInt
+  character   Character @relation(fields: [characterId], references: [id])
+
+  organizationId BigInt
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  rankId BigInt?
+  rank   Rank?   @relation(fields: [rankId], references: [id])
+
+  positionId BigInt?
+  position   Position? @relation(fields: [positionId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum OrganizationType {
+  FACTION
+  BRANCH
+  DEPARTMENT
+  DIVISION
+  BUREAU
+  SECTION
+  UNIT
+}
+
+enum RankTier {
+  ROYAL_THRONE
+  HIGH_COMMAND
+  COMMAND
+  OFFICER
+  ENLISTED
+}
+
+enum AccessType {
+  ORGANIZATION_LEADER
+  ORGANIZATION_2IC
+  ORGANIZATION_ADMIN
+  TITLE_ONLY
+}
+
+// Character
+model Character {
+  id              BigInt          @id @default(autoincrement())
+  name            String          @unique
+  gender          Gender
+  status          CharacterStatus @default(ACTIVE)
+  currentSequence Int             @default(0)
+  avatarLink      String?
+  approvalStatus  ApprovalStatus?
+
+  // Character Profile fields
+  nexusId    BigInt?
+  age        Int?
+  appearance String? @db.Text
+  habits     String? @db.Text
+  strengths  String? @db.Text
+  weaknesses String? @db.Text
+  hobbies    String? @db.Text
+  talents    String? @db.Text
+  background String? @db.Text
+
+  speciesId BigInt
+  species   Species @relation(fields: [speciesId], references: [id])
+
+  homeworldId BigInt
+  homeworld   Planet @relation(fields: [homeworldId], references: [id])
+
+  clearanceId BigInt?
+  clearance   SecurityClearance? @relation(fields: [clearanceId], references: [id])
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userSettings          UserSettings?
+  memberships           Member[]
+  peerage               Peerage?
+  forceProfile          ForceProfile?          @relation("character")
+  trainingSessions      TrainingSession[]
+  students              ForceProfile[]         @relation("masterStudent")
+  approvalCodes         CodeGen[]
+  organizationDocuments OrganizationDocument[] @relation("orgDocWritten")
+  personalDocuments     PersonalDocument[]     @relation("personalDocWritten")
+  signedDocuments       OrganizationDocument[] @relation("signedDocuments")
+  assignedDocuments     OrganizationDocument[] @relation("assignedDocuments")
+  creditAccount         CreditAccount?
+  inventory             Inventory?
+  awards                CharacterAward[]
+
+  // Character Profile collections
+  interactions      CharacterInteraction[]
+  previousPositions CharacterPreviousPosition[]
+  educationHistory  CharacterEducation[]
+  honors            CharacterHonor[]
+  goals             CharacterGoal[]
+}
+
+// CharacterInteraction
+model CharacterInteraction {
+  interaction String @db.VarChar(766)
+
+  characterId BigInt
+  character   Character @relation(fields: [characterId], references: [id])
+
+  @@id([characterId, interaction])
+}
+
+// CharacterPreviousPosition
+model CharacterPreviousPosition {
+  position String
+
+  characterId BigInt
+  character   Character @relation(fields: [characterId], references: [id])
+
+  @@id([characterId, position])
+}
+
+// CharacterEducation
+model CharacterEducation {
+  education String
+
+  characterId BigInt
+  character   Character @relation(fields: [characterId], references: [id])
+
+  @@id([characterId, education])
+}
+
+// CharacterHonor
+model CharacterHonor {
+  honor String
+
+  characterId BigInt
+  character   Character @relation(fields: [characterId], references: [id])
+
+  @@id([characterId, honor])
+}
+
+// CharacterGoal
+model CharacterGoal {
+  goal String @db.VarChar(766)
+
+  characterId BigInt
+  character   Character @relation(fields: [characterId], references: [id])
+
+  @@id([characterId, goal])
+}
+
+model Species {
+  id                       BigInt @id @default(autoincrement())
+  name                     String @unique
+  forceProbabilityModifier Float  @default(1.0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  characters Character[]
+}
+
+model Peerage {
+  id            BigInt         @id
+  character     Character      @relation(fields: [id], references: [id])
+  peerageRank   DomainRank?
+  honoraryTitle HonoraryTitle?
+
+  domainId BigInt? @unique
+  domain   Planet? @relation(fields: [domainId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum CharacterStatus {
+  ACTIVE
+  INACTIVE
+  DECEASED
+  MISSING
+  RETIRED
+}
+
+enum ApprovalStatus {
+  DRAFT
+  PENDING
+  DENIED
+  APPROVED
+}
+
+enum DomainRank {
+  KINGDOM
+  KINGDOM_HEIR
+  PRINCIPALITY
+  DUCHY
+  MARQUESSATE
+  EARLDOM
+  VISCOUNTCY
+  BARONY
+}
+
+enum HonoraryTitle {
+  DOWAGER_EMPRESS
+  QUEEN_DOWAGER
+  PRINCE
+  PRINCESS
+  LORD
+  LADY
+  KNIGHT
+  DAME
+}
+
+// Map
+model Oversector {
+  id   BigInt @id @default(autoincrement())
+  name String @unique
+
+  sectors Sector[]
+}
+
+model Sector {
+  id   BigInt @id @default(autoincrement())
+  name String @unique
+
+  oversectorId BigInt
+  oversector   Oversector @relation(fields: [oversectorId], references: [id])
+
+  systems System[]
+}
+
+model System {
+  id   BigInt @id @default(autoincrement())
+  name String @unique
+
+  sectorId BigInt
+  sector   Sector @relation(fields: [sectorId], references: [id])
+
+  planets Planet[]
+}
+
+model Planet {
+  id                       BigInt  @id @default(autoincrement())
+  name                     String  @unique
+  forceProbabilityModifier Float   @default(1.0)
+  habitable                Boolean @default(true)
+
+  systemId BigInt
+  system   System @relation(fields: [systemId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  characters Character[]
+  peerage    Peerage?
+}
+
+// Force
+model ForceProfile {
+  id        BigInt     @id
+  character Character  @relation("character", fields: [id], references: [id])
+  alignment Alignment?
+  level     ForceLevel @default(POTENTIAL)
+  aware     Boolean    @default(false)
+
+  masterId BigInt?
+  master   Character? @relation("masterStudent", fields: [masterId], references: [id])
+
+  orderId BigInt?
+  order   ForceOrder? @relation(fields: [orderId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ForceOrder {
+  id        BigInt    @id @default(autoincrement())
+  name      String    @unique
+  alignment Alignment
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  titles  ForceTitle[]
+  members ForceProfile[]
+}
+
+model ForceAbility {
+  id          BigInt    @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  alignment   Alignment
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trainingSessions TrainingSession[]
+}
+
+model ForceTitle {
+  id    BigInt     @id @default(autoincrement())
+  level ForceLevel
+  title String
+
+  orderId BigInt
+  order   ForceOrder @relation(fields: [orderId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TrainingSession {
+  id        BigInt       @id @default(autoincrement())
+  type      TrainingType
+  duration  Int
+  completed Boolean
+  notes     String?      @db.Text
+
+  characterId BigInt
+  character   Character @relation(fields: [characterId], references: [id])
+
+  abilityId BigInt?
+  ability   ForceAbility? @relation(fields: [abilityId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Alignment {
+  LIGHT
+  DARK
+  NEUTRAL
+}
+
+enum ForceLevel {
+  POTENTIAL
+  INITIATE
+  STUDENT
+  KNIGHT
+  MASTER
+  GRANDMASTER
+}
+
+enum TrainingType {
+  MEDITATION
+  LIGHTSABER
+  FORCE_ABILITY
+}
+
+// Calendar
+model Month {
+  realMonth RealMonth @id @unique
+  gameMonth String
+
+  updatedAt DateTime @updatedAt
+}
+
+model Year {
+  id       BigInt  @id @default(autoincrement())
+  gameYear Int
+  era      Era
+  current  Boolean
+
+  createdAt DateTime @default(now())
+}
+
+enum Era {
+  UFY
+  IRY
+}
+
+enum RealMonth {
+  JANUARY
+  FEBRUARY
+  MARCH
+  APRIL
+  MAY
+  JUNE
+  JULY
+  AUGUST
+  SEPTEMBER
+  OCTOBER
+  NOVEMBER
+  DECEMBER
+}
+
+// Code
+model CodeGen {
+  id      BigInt     @id @default(autoincrement())
+  code    String
+  reason  CodeReason
+  purpose String     @db.Text
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  characterId BigInt?
+  character   Character? @relation(fields: [characterId], references: [id])
+
+  documentId BigInt?       @unique
+  document   GameDocument? @relation(fields: [documentId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+enum CodeReason {
+  CHARACTER_APPROVAL
+  DOCUMENT_APPROVAL
+  OTHER
+}
+
+// Documents
+model GameDocument {
+  id             BigInt         @id @default(autoincrement())
+  sequenceNumber String         @db.VarChar(5)
+  title          String
+  content        String         @db.Text
+  status         DocumentStatus
+
+  teamId BigInt
+  team   Team   @relation(fields: [teamId], references: [id])
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  approvalCode CodeGen?
+}
+
+model OrganizationDocument {
+  id             BigInt         @id @default(autoincrement())
+  sequenceNumber String         @db.VarChar(5)
+  title          String
+  content        String         @db.Text
+  status         DocumentStatus
+  viewType       ViewType
+
+  authorId BigInt
+  author   Character @relation("orgDocWritten", fields: [authorId], references: [id])
+
+  organizationId BigInt
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  typeId BigInt
+  type   DocumentType @relation(fields: [typeId], references: [id])
+
+  listClearanceId BigInt?
+  listClearance   SecurityClearance? @relation("listClearance", fields: [listClearanceId], references: [id])
+
+  viewClearanceId BigInt?
+  viewClearance   SecurityClearance? @relation("viewClearance", fields: [viewClearanceId], references: [id])
+
+  signers   Character[] @relation("signedDocuments")
+  assignees Character[] @relation("assignedDocuments")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PersonalDocument {
+  id             BigInt         @id @default(autoincrement())
+  sequenceNumber String         @db.VarChar(5)
+  title          String
+  content        String         @db.Text
+  status         DocumentStatus
+
+  authorId BigInt
+  author   Character @relation("personalDocWritten", fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DocumentSequence {
+  id              BigInt @id @default(autoincrement())
+  currentSequence Int    @default(0)
+
+  typeId BigInt
+  type   DocumentType @relation(fields: [typeId], references: [id])
+
+  organizationId BigInt
+  organization   Organization @relation(fields: [organizationId], references: [id])
+}
+
+model DocumentType {
+  id                   BigInt                 @id @default(autoincrement())
+  name                 String                 @unique
+  abbreviation         String                 @db.VarChar(5)
+  sequenced            Boolean                @default(false)
+  useOrganization      Boolean                @default(true)
+  OrganizationDocument OrganizationDocument[]
+  DocumentSequence     DocumentSequence[]
+}
+
+enum DocumentStatus {
+  FOR_REVIEW
+  COMPLETE
+  REVOKED
+  NEW
+  IN_PROCESS
+  PERMANENT
+}
+
+enum ViewType {
+  DEFAULT
+  SECURITY_CLEARANCE
+  ASSIGNEES_ONLY
+}
+
+// Financial and Inventory
+model CreditAccount {
+  id            BigInt        @id @default(autoincrement())
+  type          InventoryType
+  accountNumber String
+  balance       Int           @default(0)
+
+  characterId BigInt?    @unique
+  character   Character? @relation(fields: [characterId], references: [id])
+
+  organizationId BigInt?       @unique
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sentTransfers     CreditTransfer[] @relation("SentTransfers")
+  receivedTransfers CreditTransfer[] @relation("ReceivedTransfers")
+
+  @@unique([type, accountNumber])
+}
+
+model Inventory {
+  id   BigInt        @id @default(autoincrement())
+  type InventoryType
+
+  characterId BigInt?    @unique
+  character   Character? @relation(fields: [characterId], references: [id])
+
+  organizationId BigInt?       @unique
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items             Item[]
+  ships             Ship[]
+  vehicles          Vehicle[]
+  sentTransfers     InventoryTransfer[] @relation("SentTransfers")
+  receivedTransfers InventoryTransfer[] @relation("ReceivedTransfers")
+}
+
+model Item {
+  id       BigInt @id @default(autoincrement())
+  quantity Int
+
+  inventoryId BigInt
+  inventory   Inventory @relation(fields: [inventoryId], references: [id])
+
+  modelId BigInt
+  model   ItemModel @relation(fields: [modelId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transfers InventoryTransferItem[]
+}
+
+model Ship {
+  id                BigInt @id @default(autoincrement())
+  name              String
+  crewCapacity      Int
+  cargoCapacity     Int
+  passengerCapacity Int
+
+  inventoryId BigInt
+  inventory   Inventory @relation(fields: [inventoryId], references: [id])
+
+  modelId BigInt
+  model   ShipModel @relation(fields: [modelId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transfers InventoryTransferItem[]
+}
+
+model Vehicle {
+  id            BigInt @id @default(autoincrement())
+  name          String
+  crewCapacity  Int
+  cargoCapacity Int
+
+  inventoryId BigInt
+  inventory   Inventory @relation(fields: [inventoryId], references: [id])
+
+  modelId BigInt
+  model   VehicleModel @relation(fields: [modelId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transfers InventoryTransferItem[]
+}
+
+model ItemModel {
+  id          BigInt   @id @default(autoincrement())
+  name        String
+  description String   @db.Text
+  type        ItemType
+  weight      Int
+  stackable   Boolean
+  deleted     Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items Item[]
+}
+
+model ShipModel {
+  id                BigInt  @id @default(autoincrement())
+  name              String
+  manufacturer      String
+  crewCapacity      Int
+  cargoCapacity     Int
+  passengerCapacity Int
+  deleted           Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ships Ship[]
+}
+
+model VehicleModel {
+  id            BigInt  @id @default(autoincrement())
+  name          String
+  manufacturer  String
+  crewCapacity  Int
+  cargoCapacity Int
+  deleted       Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vehicles Vehicle[]
+}
+
+model CreditTransfer {
+  id     BigInt         @id @default(autoincrement())
+  amount Int
+  status TransferStatus
+  reason String?        @db.Text
+  date   DateTime       @default(now())
+
+  senderId BigInt
+  sender   CreditAccount @relation("SentTransfers", fields: [senderId], references: [id])
+
+  recipientId BigInt
+  recipient   CreditAccount @relation("ReceivedTransfers", fields: [recipientId], references: [id])
+}
+
+model InventoryTransfer {
+  id   BigInt   @id @default(autoincrement())
+  date DateTime @default(now())
+
+  senderId BigInt
+  sender   Inventory @relation("SentTransfers", fields: [senderId], references: [id])
+
+  recipientId BigInt
+  recipient   Inventory @relation("ReceivedTransfers", fields: [recipientId], references: [id])
+
+  assets InventoryTransferItem[]
+}
+
+model InventoryTransferItem {
+  id       BigInt         @id @default(autoincrement())
+  status   TransferStatus
+  quantity Int?
+  reason   String?        @db.Text
+
+  transferId BigInt
+  transfer   InventoryTransfer @relation(fields: [transferId], references: [id])
+
+  itemId BigInt?
+  item   Item?   @relation(fields: [itemId], references: [id])
+
+  shipId BigInt?
+  ship   Ship?   @relation(fields: [shipId], references: [id])
+
+  vehicleId BigInt?
+  vehicle   Vehicle? @relation(fields: [vehicleId], references: [id])
+}
+
+enum InventoryType {
+  CHARACTER
+  ORGANIZATION
+}
+
+enum ItemType {
+  WEAPON
+  ARMOR
+  CONSUMABLE
+  MATERIAL
+  TOOL
+  KEY_ITEM
+  OTHER
+}
+
+enum TransferStatus {
+  SUCCESS
+  FAILED
+}
+
+// Awards
+model Award {
+  id           BigInt @id @default(autoincrement())
+  name         String
+  abbreviation String
+
+  approvingAuthorityId BigInt
+  approvingAuthority   Organization @relation(fields: [approvingAuthorityId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tiers AwardTier[]
+}
+
+model AwardTier {
+  id     BigInt  @id @default(autoincrement())
+  suffix String?
+
+  awardId BigInt
+  award   Award  @relation(fields: [awardId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  characters CharacterAward[]
+}
+
+model CharacterAward {
+  id          BigInt      @id @default(autoincrement())
+  dateAwarded DateTime
+  status      AwardStatus @default(NOMINATED)
+
+  characterId BigInt
+  character   Character @relation(fields: [characterId], references: [id])
+
+  awardId BigInt
+  award   AwardTier @relation(fields: [awardId], references: [id])
+}
+
+enum AwardStatus {
+  NOMINATED
+  APPROVED
+  DENIED
+  AWARDED
+}
+
+// Notifications and Communication
+model Notification {
+  id        BigInt   @id @default(autoincrement())
+  message   String
+  link      String?
+  seen      Boolean  @default(false)
+  read      Boolean  @default(false)
+  deleted   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+}
