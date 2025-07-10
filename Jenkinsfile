@@ -2,7 +2,7 @@ pipeline {
 	agent any
 
 	tools {
-		git "Default"
+		nodejs "Node 18"
 	}
 
     environment {
@@ -74,6 +74,17 @@ pipeline {
                         aws configure set region ${AWS_REGION}
                     '''
                 }
+            }
+        }
+
+        stage('Verify Node Installation') {
+			steps {
+				sh '''
+                    echo "Node.js version:"
+                    node --version
+                    echo "npm version:"
+                    npm --version
+                '''
             }
         }
 
