@@ -1,6 +1,10 @@
 pipeline {
 	agent any
 
+	tools {
+		git "Default"
+	}
+
     environment {
 		AWS_REGION = 'us-east-1'
         PROJECT_NAME = 'tap-app'
@@ -37,7 +41,7 @@ pipeline {
     }
 
     stages {
-		stage('Checkout') {
+		/*stage('Checkout') {
 			steps {
 				checkout scm
                 script {
@@ -48,7 +52,7 @@ pipeline {
                     env.IMAGE_TAG = "${env.GIT_COMMIT_SHORT}-${env.BUILD_NUMBER}"
                 }
             }
-        }
+        }*/
 
         stage('Environment Setup') {
 			steps {
