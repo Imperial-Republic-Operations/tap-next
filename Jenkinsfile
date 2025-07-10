@@ -54,7 +54,7 @@ pipeline {
             }
         }*/
 
-        stage('Environment Setup') {
+        /*stage('Environment Setup') {
 			steps {
 				script {
 					// Install or update AWS CLI if needed
@@ -75,7 +75,7 @@ pipeline {
                     '''
                 }
             }
-        }
+        }*/
 
         stage('Verify Node Installation') {
 			steps {
