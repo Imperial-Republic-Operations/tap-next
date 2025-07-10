@@ -13,7 +13,7 @@ pipeline {
         APP_VERSION = "${BUILD_NUMBER}"
 
         // AWS credentials - configure these in Jenkins credentials
-        AWS_CREDENTIALS = credentials('aws-credentials-staging')
+        AWS_CREDENTIALS = credentials('aws-credentials')
         DOCKER_CREDENTIALS = credentials('docker-credentials')
 
         // Docker Hub configuration
