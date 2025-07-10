@@ -1,0 +1,52 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+      - "9229:9229"  # Debug port for staging
+    environment:
+      - NODE_ENV=staging
+      - PORT=3000
+      - DEBUG_MODE=true
+      - LOG_LEVEL=debug
+      - ENABLE_PROFILING=true
+      - NEXT_TELEMETRY_DISABLED=1
+    env_file:
+      - .env  # All credentials and config loaded from Secrets Manager
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      - redis
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - app
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

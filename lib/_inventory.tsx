@@ -6,9 +6,21 @@ import { Prisma } from "@/lib/generated/prisma";
 
 export type InventoryContents = Prisma.InventoryGetPayload<{
     include: {
-        items: true,
-        ships: true,
-        vehicles: true,
+        items: {
+            include: {
+                model: true,
+            }
+        },
+        ships: {
+            include: {
+                model: true,
+            }
+        },
+        vehicles: {
+            include: {
+                model: true,
+            }
+        },
     },
 }>;
 
@@ -17,15 +29,27 @@ export async function fetchInventoryCounts(ownerId: bigint, type: InventoryType)
 
     const[inventory, creditAccount] = await Promise.all([
         prisma.inventory.findUnique({
-            where: where,
+            where,
             include: {
-                items: true,
-                ships: true,
-                vehicles: true,
+                items: {
+                    include: {
+                        model: true,
+                    }
+                },
+                ships: {
+                    include: {
+                        model: true,
+                    }
+                },
+                vehicles: {
+                    include: {
+                        model: true,
+                    }
+                },
             },
         }),
         prisma.creditAccount.findUnique({
-            where: where,
+            where,
         }),
     ]);
 

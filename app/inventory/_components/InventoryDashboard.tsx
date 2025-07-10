@@ -6,6 +6,9 @@ import { fetchInventoryCounts, InventoryContents } from "@/lib/_inventory";
 import { CreditAccount, InventoryType, Item, Ship, Vehicle } from "@/lib/generated/prisma";
 import InventoryStatCard from "@/app/inventory/_components/InventoryStatCard";
 import Cookies from 'js-cookie';
+import InventoryAssetList from "@/app/inventory/_components/InventoryAssetList";
+
+export type AssetType = 'items' | 'ships' | 'vehicles';
 
 export default function InventoryDashboard() {
     const [activeCharacterId, setActiveCharacterId] = useState<string | null>(null);
@@ -15,13 +18,23 @@ export default function InventoryDashboard() {
     const [credits, setCredits] = useState(0);
     const [targets, setTargets] = useState<{type: InventoryType, id: bigint, name: string}[]>([]);
     const [selectedTarget, setSelectedTarget] = useState<{type: InventoryType, id: bigint, name: string} | null>(null);
+    const [selectedAssetType, setSelectedAssetType] = useState<AssetType | null>(null);
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const index = parseInt(e.target.value);
         const selected = targets[index];
         if (selected) {
             setSelectedTarget(selected);
+            setSelectedAssetType(null);
             loadInventory();
+        }
+    };
+
+    const handleAssetTypeClick = (assetType: AssetType) => {
+        if (selectedAssetType === assetType) {
+            setSelectedAssetType(null);
+        } else {
+            setSelectedAssetType(assetType);
         }
     };
 
@@ -82,6 +95,19 @@ export default function InventoryDashboard() {
         loadInventory();
     }, [selectedTarget]);
 
+    const getCurrentAssets = () => {
+        switch (selectedAssetType) {
+            case 'items':
+                return items;
+            case 'ships':
+                return ships;
+            case 'vehicles':
+                return vehicles;
+            default:
+                return [];
+        }
+    };
+
     return(
         <div className="bg-white py-24 sm:py-32 dark:bg-gray-900">
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -122,11 +148,20 @@ export default function InventoryDashboard() {
                     </div>
 
                     <dl className="mt-16 grid grid-cols-1 gap-0.5 overflow-hidden rounded-2xl text-center sm:grid-cols-2 lg:grid-cols-4">
-                        <InventoryStatCard label="Credits" value={`${credits.toLocaleString()} cr`} />
-                        <InventoryStatCard label="Items" value={items.length.toLocaleString()} />
-                        <InventoryStatCard label="Ships" value={ships.length.toLocaleString()} />
-                        <InventoryStatCard label="Vehicles" value={vehicles.length.toLocaleString()} />
+                        <InventoryStatCard label="Credits" value={`${credits.toLocaleString()} cr`} clickable={false} />
+                        <InventoryStatCard label="Items" value={items.length.toLocaleString()} clickable={true} isActive={selectedAssetType === 'items'} onClick={() => handleAssetTypeClick('items')} />
+                        <InventoryStatCard label="Ships" value={ships.length.toLocaleString()} clickable={true} isActive={selectedAssetType === 'ships'} onClick={() => handleAssetTypeClick('ships')} />
+                        <InventoryStatCard label="Vehicles" value={vehicles.length.toLocaleString()} clickable={true} isActive={selectedAssetType === 'vehicles'} onClick={() => handleAssetTypeClick('vehicles')} />
                     </dl>
+
+                    {selectedAssetType && (
+                        <div className="mt-12">
+                            <InventoryAssetList
+                                assetType={selectedAssetType}
+                                assets={getCurrentAssets()}
+                                onCloseAction={() => setSelectedAssetType(null)} />
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

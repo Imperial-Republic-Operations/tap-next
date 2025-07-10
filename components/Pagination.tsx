@@ -1,5 +1,7 @@
 'use client'
 
+import { classNames } from "@/lib/style";
+
 type Props = {
     currentPage: number;
     totalPages: number;
@@ -32,7 +34,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pr
             <div className="-mt-px flex w-0 flex-1">
                 <button
                     onClick={() => currentPage > 0 && onPageChange(currentPage - 1)}
-                    className="inline-flex items-center border-t-2 border-transparent pt-4 pr-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300"
+                    className={classNames(currentPage <= 0 && 'cursor-not-allowed', 'inline-flex items-center border-t-2 border-transparent pt-4 pr-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300')}
                 >
                     <svg className="mr-3 size-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path
@@ -64,7 +66,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pr
             <div className="-mt-px flex w-0 flex-1 justify-end">
                 <button
                     onClick={() => currentPage + 1 < totalPages && onPageChange(currentPage + 1)}
-                    className="inline-flex items-center border-t-2 border-transparent pt-4 pl-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300"
+                    className={classNames(currentPage + 1 >= totalPages && 'cursor-not-allowed', 'inline-flex items-center border-t-2 border-transparent pt-4 pl-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300')}
                 >
                     Next
                     <svg className="ml-3 size-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">

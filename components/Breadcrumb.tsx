@@ -4,6 +4,8 @@ import { getBreadcrumbTitle, getBreadcrumbTitleByType } from "@/lib/title";
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useIsNotFound } from "@/contexts/NotFoundContext";
+import Link from "next/link";
+import { useAppTime } from "@/hooks/useAppTime";
 
 function isNumeric(value: string): boolean {
     return /^\d+$/.test(value);
@@ -40,15 +42,40 @@ function titleCase(str: string): string {
         .join(" ");
 }
 
-export default function Breadcrumb({ inGameDate }: { inGameDate: string }) {
+interface StaticDateInfo {
+    gameMonth: string;
+    gameYear: number;
+    era: string;
+    day: number;
+}
+
+// export default function Breadcrumb({ inGameDate }: { inGameDate: string }) {
+export default function Breadcrumb({ staticDateInfo }: { staticDateInfo: StaticDateInfo }) {
     const pathname = usePathname();
     const isNotFoundPage = useIsNotFound();
+    const { getAppTime } = useAppTime();
 
     const [pages, setPages] = useState<{ name: string, path: string }[]>([]);
+    const [currentTime, setCurrentTime] = useState<string>('');
+
+    useEffect(() => {
+        const updateTime = () => {
+            const now = getAppTime();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            setCurrentTime(`${hours}:${minutes}:${seconds}`);
+        };
+
+        updateTime();
+
+        const interval = setInterval(updateTime, 1000);
+        return () => clearInterval(interval);
+    }, [getAppTime]);
 
     useEffect(() => {
         const generatePages = async () => {
-            const segments = pathname.substring(1).split("/");
+            const segments = pathname.substring(1).split('/');
             const pagesList: {name: string, path: string}[] = [];
             let path = "";
 
@@ -115,13 +142,15 @@ export default function Breadcrumb({ inGameDate }: { inGameDate: string }) {
         document.title = `${title} | Terminal Access Project`
     }, [pages]);
 
+    const inGameDate = `${staticDateInfo.gameMonth} ${staticDateInfo.day}, ${staticDateInfo.gameYear} ${staticDateInfo.era} ${currentTime}`;
+
     return (
         <nav className="flex border-t border-b border-gray-200 bg-white dark:border-gray-500 dark:bg-gray-800"
              aria-label="Breadcrumb">
             <ol className="mx-auto flex w-full max-w-(--breakpoint-xl) space-x-4 px-4 sm:px-6 lg:px-8">
                 <li className="flex">
                     <div className="flex items-center">
-                        <a href="/" className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                        <Link href="/" className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
                             <svg className="size-5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"
                                  data-slot="icon">
                                 <path fillRule="evenodd"
@@ -129,7 +158,7 @@ export default function Breadcrumb({ inGameDate }: { inGameDate: string }) {
                                       clipRule="evenodd"/>
                             </svg>
                             <span className="sr-only">Home</span>
-                        </a>
+                        </Link>
                     </div>
                 </li>
                 {pages.map((page, i) => (

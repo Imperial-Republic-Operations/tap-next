@@ -7,7 +7,7 @@ import {
     MenuItem,
     MenuItems
 } from "@headlessui/react";
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, ChevronDownIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { roles, userHasAccess } from "@/lib/roles";
 import { cookies } from "next/headers";
 import { signIn, signOut } from "@/auth";
@@ -19,16 +19,33 @@ import { fetchUnreadNotificationCount } from "@/lib/_notifications";
 import NotificationBell from "@/components/NotificationBell";
 import { getSession } from "@/lib/auth";
 
-const navigation = [
-    { title: "Home", route: "/", exact: true, signInRequired: false, role: null },
-    { title: "Characters", route: "/characters", exact: false, signInRequired: true, role: roles[1] },
-    { title: "Organizations", route: "/organizations", exact: false, signInRequired: false, role: null },
-    { title: "Inventory", route: "/inventory", exact: false, signInRequired: true, role: roles[1] },
-    { title: "Documents", route: "/documents", exact: false, signInRequired: false, role: null },
-    { title: "User Administration", route: "/users", exact: false, signInRequired: true, role: roles[3] },
-    { title: "Calendar Settings", route: "/calendar", exact: false, signInRequired: true, role: roles[3] },
-    { title: "Notifications Test", route: "/notifications/test", exact: false, signInRequired: true, role: roles[6] },
-];
+const navigationConfig = {
+    main: [
+        { title: "Home", route: "/", exact: true, signInRequired: false, role: null, devOnly: false },
+        { title: "Characters", route: "/characters", exact: false, signInRequired: true, role: roles[1], devOnly: false },
+        { title: "Organizations", route: "/organizations", exact: false, signInRequired: false, role: null, devOnly: false },
+        { title: "Documents", route: "/documents", exact: false, signInRequired: false, role: null, devOnly: false },
+        { title: "Inventory", route: "/inventory", exact: false, signInRequired: true, role: roles[1], devOnly: false },
+    ],
+    dropdown: {
+        title: "More",
+        sections: [
+            {
+                label: "Administration",
+                items: [
+                    { title: "User Administration", route: "/users", exact: false, signInRequired: true, role: roles[4], devOnly: false },
+                    { title: "Calendar Settings", route: "/calendar", exact: false, signInRequired: true, role: roles[3], devOnly: false },
+                    { title: "Notifications Test", route: "/notifications/test", exact: false, signInRequired: true, role: roles[6], devOnly: true },
+                ]
+            }
+        ],
+    }
+};
+
+const allNavigationItems = [
+    ...navigationConfig.main,
+    ...navigationConfig.dropdown.sections.flatMap(section => section.items),
+]
 
 const dropdown = [
     { title: "Profile", route: "/profile", signInRequired: true },
@@ -78,6 +95,15 @@ export default async function Header() {
         }
     }
 
+    const visibleDropdownSections = navigationConfig.dropdown.sections
+        .map(section => ({
+            ...section,
+            items: section.items.filter(item => (!item.signInRequired || (item.signInRequired && status === "authenticated" && userHasAccess(item.role, session?.user))) && ((item.devOnly && process.env.NODE_ENV !== "production") || !item.devOnly))
+        }))
+        .filter(section => section.items.length > 0);
+
+    const hasVisibleDropdownItems = visibleDropdownSections.length > 0;
+
     return (
         <Disclosure as="nav" className="bg-white shadow-sm dark:bg-gray-800 dark:shadow-none">
             <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
@@ -100,16 +126,46 @@ export default async function Header() {
                         </div>
                         <div className="hidden sm:ml-6 sm:block">
                             <div className="flex space-x-4">
-                                {navigation
-                                    .filter((item) => !item.signInRequired || (item.signInRequired && status === "authenticated" && userHasAccess(item.role, session?.user)))
+                                {navigationConfig.main
+                                    .filter((item) => (!item.signInRequired || (item.signInRequired && status === "authenticated" && userHasAccess(item.role, session?.user))) && ((item.devOnly && process.env.NODE_ENV !== "production") || !item.devOnly))
                                     .map((item) => (
-                                        /*<a key={item.title} href={item.route} aria-current={isCurrentPage(pathname, item.route, item.exact) ? 'page' : undefined} className={classNames(isCurrentPage(pathname, item.route, item.exact) ? 'border-primary-500 text-gray-900 dark:bg-gray-900 dark:text-white' : 'border-transparent hover:border-gray-300 hover:text-gray-700 dark:hover:text-white dark:hover:bg-gray-700', 'text-sm font-medium px-3 py-2 border-b-2 text-gray-500 dark:rounded-md dark:text-gray-300 dark:border-none')}>
-                                            {item.title}
-                                        </a>*/
                                         <NavbarLink key={item.title} href={item.route} exact={item.exact}>
                                             {item.title}
                                         </NavbarLink>
                                     ))}
+
+                                {hasVisibleDropdownItems && (
+                                    <Menu as="div" className="relative">
+                                        <MenuButton className="inline-flex items-center gap-x-1 text-sm font-medium px-3 py-2 border-b-2 border-transparent hover:border-gray-300 hover:text-gray-700 dark:hover:text-white dark:hover:bg-gray-700 text-gray-500 dark:rounded-md dark:text-gray-300 dark:border-none">
+                                            {navigationConfig.dropdown.title}
+                                            <ChevronDownIcon className="w-4 h-4" />
+                                        </MenuButton>
+
+                                        <MenuItems className="absolute left-0 z-10 mt-2 w-56 origin-top-left rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-none dark:bg-gray-800 dark:ring-gray-700">
+                                            {visibleDropdownSections.map((section, sectionIdx) => (
+                                                <div key={section.label}>
+                                                    {sectionIdx > 0 && (
+                                                        <div className="border-t border-gray-100 dark:border-gray-700" />
+                                                    )}
+                                                    {section.label && (
+                                                        <div className="px-4 py-2">
+                                                            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                                                {section.label}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                    {section.items.map((item) => (
+                                                        <MenuItem key={item.title}>
+                                                            <a href={item.route} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+                                                                {item.title}
+                                                            </a>
+                                                        </MenuItem>
+                                                    ))}
+                                                </div>
+                                            ))}
+                                        </MenuItems>
+                                    </Menu>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -184,7 +240,12 @@ export default async function Header() {
                                     </MenuItem>
                                 ))}
                                 <MenuItem>
-                                    <form action={async () => { "use server"; status === "authenticated" ? await signOut({ redirectTo: "/" }) : await signIn("nexus")}}>
+                                    <form
+                                        action={async () => {
+                                            'use server'
+                                            if (status === 'authenticated') return await signOut({ redirectTo: '/' });
+                                            else return await signIn('nexus');
+                                        }}>
                                         <button type="submit" className="cursor-pointer block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden w-full text-left">
                                             {status === "authenticated" ? "Logout" : "Login"}
                                         </button>
@@ -198,11 +259,13 @@ export default async function Header() {
 
             <DisclosurePanel className="sm:hidden">
                 <div className="space-y-1 px-2 pt-2 pb-3">
-                    {navigation.map((item) => (
-                        <MobileNavbarLink key={item.title} href={item.route} exact={item.exact}>
-                            {item.title}
-                        </MobileNavbarLink>
-                    ))}
+                    {allNavigationItems
+                        .filter((item) => (!item.signInRequired || (item.signInRequired && status === "authenticated" && userHasAccess(item.role, session?.user))) && ((item.devOnly && process.env.NODE_ENV !== "production") || !item.devOnly))
+                        .map((item) => (
+                            <MobileNavbarLink key={item.title} href={item.route} exact={item.exact}>
+                                {item.title}
+                            </MobileNavbarLink>
+                        ))}
                 </div>
             </DisclosurePanel>
         </Disclosure>

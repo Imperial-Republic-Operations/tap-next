@@ -203,20 +203,6 @@ model PositionPermission {
   position   Position @relation(fields: [positionId], references: [id])
 }
 
-enum Permission {
-  LEADER
-  SECOND_IN_COMMAND
-  LEADERSHIP
-  MANAGE_MEMBERS
-  MANAGE_POSITIONS
-  MANAGE_ASSETS
-  MANAGE_RANKS
-  MANAGE_REPORTS
-  OVERRIDE_SECURITY
-  MANAGE_SECURITY
-  MONITOR_ACTIVITY
-}
-
 model SecurityClearance {
   id   BigInt @id @default(autoincrement())
   name String @unique
@@ -273,6 +259,21 @@ enum AccessType {
   ORGANIZATION_2IC
   ORGANIZATION_ADMIN
   TITLE_ONLY
+}
+
+enum Permission {
+  LEADER
+  SECOND_IN_COMMAND
+  LEADERSHIP
+  MANAGE_MEMBERS
+  MANAGE_POSITIONS
+  MANAGE_ASSETS
+  MANAGE_RANKS
+  MANAGE_REPORTS
+  OVERRIDE_SECURITY
+  MANAGE_SECURITY
+  MONITOR_ACTIVITY
+  CREATE_REPORTS
 }
 
 // Character

@@ -31,39 +31,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 email: profile.email,
                 image: profile.photoUrl,
                 role: isLeadAdmin || isSeniorAdmin ? Role.SYSTEM_ADMIN : isAdmin ? Role.ASSISTANT_ADMIN : isStaff ? Role.STAFF : Role.PLAYER,
-                nexusId: profile.id,
+                nexusId: profile.id.toString(),
             };
         },
     }],
     callbacks: {
         async session({ session, user }) {
-            session.user.role = user.role;
             return {
                 ...session,
                 user: {
                     ...session.user,
+                    id: user.id,
                     nexusId: user.nexusId?.toString(),
                     role: user.role
                 }
             };
         },
-        /*async signIn({ user }) {
-            const settings = await prisma.userSettings.findUnique({
-                where: { userId: user.id },
-            });
-
-            if (!settings) {
-                await prisma.userSettings.create({
-                    data: {
-                        user: {
-                            connect: { id: user.id }
-                        }
-                    }
-                })
-            }
-
-            return true;
-        },*/
     },
     adapter: PrismaAdapter(prisma),
     debug: true,

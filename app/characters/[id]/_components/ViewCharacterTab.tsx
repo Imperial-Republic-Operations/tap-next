@@ -99,13 +99,13 @@ export default function ViewCharacterTab({ character }: { character: CharacterDe
                 let title = primaryMembership.rank.name;
                 const priorityTitles = ["Supreme Ruler", "Executor", "Supreme Chancellor", "Praetor"];
 
-                for (let member of character.memberships) {
+                character.memberships.forEach((member) => {
                     if (!priorityTitles.includes(title)) {
                         if (member.rank && member.id !== primaryMembership.id && member.rank.name === "Praetor") {
                             title = member.rank.name;
                         }
                     }
-                }
+                })
 
                 return title + " ";
             }
@@ -385,7 +385,7 @@ export default function ViewCharacterTab({ character }: { character: CharacterDe
                 <>
                     {character.memberships.length > 0 && (
                         <div className="mt-3 mb-10">
-                            <div className="mx-auto max-w-7xl px-1">
+                            <div className="max-w-7xl px-1">
                                 <div className="sm:flex sm:items-center">
                                     <div className="sm:flex-auto">
                                         <h1 className="text-base font-semibold text-gray-900 dark:text-white underline">Career</h1>
@@ -393,7 +393,7 @@ export default function ViewCharacterTab({ character }: { character: CharacterDe
                                 </div>
                             </div>
                             <div className="mt-3 flow-root overflow-hidden">
-                                <div className="mx-auto max-w-7xl">
+                                <div className="max-w-7xl">
                                     <table className="w-full text-left">
                                         <thead className="bg-white dark:bg-gray-900">
                                         <tr>
@@ -453,7 +453,7 @@ export default function ViewCharacterTab({ character }: { character: CharacterDe
 
                     {character.peerage && (
                         <div className={classNames(character.memberships.length === 0 && 'mt-3')}>
-                            <div className="mx-auto max-w-7xl px-1">
+                            <div className="max-w-7xl px-1">
                                 <div className="sm:flex sm:items-center">
                                     <div className="sm:flex-auto">
                                         <h1 className="text-base font-semibold text-gray-900 dark:text-white underline">Peerage</h1>

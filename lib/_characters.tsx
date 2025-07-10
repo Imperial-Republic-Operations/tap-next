@@ -51,9 +51,13 @@ export type CharacterDetails = Prisma.CharacterGetPayload<{
         memberships: {
             include: {
                 organization: true,
-                position: true,
                 rank: true,
-            }
+                position: {
+                    include: {
+                        permissions: true,
+                    },
+                },
+            },
         },
     },
 }>;
@@ -155,6 +159,16 @@ export async function fetchCharacter(charId: bigint) {
                     },
                 },
             },
+        },
+    })
+}
+
+export async function fetchCharacterClearance(charId: bigint) {
+    return prisma.character.findUnique({
+        where: { id: charId },
+        select: {
+            clearanceId: true,
+            clearance: { select: { tier: true } },
         },
     })
 }
