@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useIsNotFound } from "@/contexts/NotFoundContext";
 import Link from "next/link";
 import { useAppTime } from "@/hooks/useAppTime";
+import { useFormatting } from '@/hooks/useFormatting';
 
 function isNumeric(value: string): boolean {
     return /^\d+$/.test(value);
@@ -23,12 +24,12 @@ function isKeyword(value: string): boolean {
     return keywords.includes(value.toLowerCase());
 }
 
-function getPathPrefix(keyword: string): string {
+function getPathPrefix(keyword: string, t: any): string {
     switch (keyword.toLowerCase()) {
         case "edit":
-            return "Editing:";
+            return t.breadcrumb.editing;
         case "view":
-            return "Viewing:";
+            return t.breadcrumb.viewing;
         default:
             return "";
     }
@@ -54,6 +55,7 @@ export default function Breadcrumb({ staticDateInfo }: { staticDateInfo: StaticD
     const pathname = usePathname();
     const isNotFoundPage = useIsNotFound();
     const { getAppTime } = useAppTime();
+    const { formatTimeSeconds, t } = useFormatting();
 
     const [pages, setPages] = useState<{ name: string, path: string }[]>([]);
     const [currentTime, setCurrentTime] = useState<string>('');
@@ -61,10 +63,7 @@ export default function Breadcrumb({ staticDateInfo }: { staticDateInfo: StaticD
     useEffect(() => {
         const updateTime = () => {
             const now = getAppTime();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const seconds = now.getSeconds().toString().padStart(2, '0');
-            setCurrentTime(`${hours}:${minutes}:${seconds}`);
+            setCurrentTime(formatTimeSeconds(now));
         };
 
         updateTime();
@@ -88,7 +87,7 @@ export default function Breadcrumb({ staticDateInfo }: { staticDateInfo: StaticD
                 if (isKeyword(segment)) {
                     const keyword = segment;
                     const base = segments[0]?.toLowerCase();
-                    const prefix = getPathPrefix(keyword);
+                    const prefix = getPathPrefix(keyword, t);
 
                     if (i +2 < segments.length && isType(base, segments[i + 1]) && isNumeric(segments[i + 2])) {
                         const type = segments[i + 1];
@@ -111,20 +110,20 @@ export default function Breadcrumb({ staticDateInfo }: { staticDateInfo: StaticD
                     const title = await getBreadcrumbTitle(base, BigInt(segment));
                     pagesList.push({name: title, path})
                 } else if (segment === "new") {
-                    let name = "creating";
+                    let name = t.breadcrumb.creating;
                     switch (segments[i - 1]) {
                         case "characters":
-                            name += " character";
+                            name += ` ${t.breadcrumb.character}`;
                             break;
                         case "organizations":
-                            name += " organization";
+                            name += ` ${t.breadcrumb.organization}`;
                             break;
                         default:
                             name += "...";
                     }
                     pagesList.push({name: titleCase(name), path})
                 } else if (segment === "pending") {
-                    pagesList.push({name: titleCase(`${segment} ${segments[i - 1]}`), path})
+                    pagesList.push({name: titleCase(`${t.breadcrumb.pending} ${segments[i - 1]}`), path})
                 } else {
                     pagesList.push({ name: titleCase(segment.replace("-", " ")), path });
                 }
@@ -157,7 +156,7 @@ export default function Breadcrumb({ staticDateInfo }: { staticDateInfo: StaticD
                                       d="M9.293 2.293a1 1 0 0 1 1.414 0l7 7A1 1 0 0 1 17 11h-1v6a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-6H3a1 1 0 0 1-.707-1.707l7-7Z"
                                       clipRule="evenodd"/>
                             </svg>
-                            <span className="sr-only">Home</span>
+                            <span className="sr-only">{t.navigation.home}</span>
                         </Link>
                     </div>
                 </li>

@@ -59,7 +59,7 @@ model UserSettings {
 
 model Account {
   id                       String  @id @default(cuid())
-  userId                   String  @unique
+  userId                   String
   type                     String
   provider                 String
   providerAccountId        String
@@ -160,6 +160,8 @@ model Organization {
   creditAccount CreditAccount?
   inventory     Inventory?
   awards        Award[]
+
+  @@unique([name, parentId])
 }
 
 model Rank {
@@ -177,6 +179,8 @@ model Rank {
   updatedAt DateTime @updatedAt
 
   members Member[]
+
+  @@unique([name, organizationId])
 }
 
 model Position {
@@ -193,6 +197,8 @@ model Position {
 
   members     Member[]
   permissions PositionPermission[]
+
+  @@unique([name, organizationId])
 }
 
 model PositionPermission {
@@ -234,6 +240,8 @@ model Member {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([characterId, organizationId])
 }
 
 enum OrganizationType {
@@ -547,6 +555,8 @@ model ForceTitle {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([level, orderId])
 }
 
 model TrainingSession {

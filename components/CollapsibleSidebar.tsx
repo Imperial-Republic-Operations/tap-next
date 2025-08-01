@@ -1,14 +1,16 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { Team } from "@/lib/generated/prisma";
+import { Team, UserWithTeamAndTeams } from "@/lib/types";
 import { classNames } from "@/lib/style";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { userHasAccess } from "@/lib/roles";
 import { Session } from "next-auth";
-import { fetchUser, UserWithTeamAndTeams } from "@/lib/_users";
+import { usersApi } from "@/lib/apiClient";
+import { useFormatting } from '@/hooks/useFormatting';
 
-export default function CollapsibleSidebar({navigation, session, status}: {navigation: {title: string, path: string, exact: boolean, signInRequired: boolean, role?: string, badge?: number}[], session: Session | null, status: 'authenticated' | 'unauthenticated'}) {
+export default function CollapsibleSidebar({navigation, session, status}: {navigation: {title: string, path: string, exact: boolean, signInRequired: boolean, role?: string, badge?: number}[], session: Session | null, status: 'authenticated' | 'loading' | 'unauthenticated'}) {
+    const { t } = useFormatting();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [teams, setTeams] = useState<Team[]>([]);
     const [scrollY, setScrollY] = useState(0);
@@ -16,21 +18,28 @@ export default function CollapsibleSidebar({navigation, session, status}: {navig
 
     const loadUserData = async () => {
         if (session?.user) {
-            const user: UserWithTeamAndTeams | null = await fetchUser(session.user.id);
+            try {
+                const response = await usersApi.getUser(session.user.id);
+                const user: UserWithTeamAndTeams | null = response.data;
+                console.log(user);
 
-            if (user?.team) {
-                const userTeams = [user.team];
-                user.teams.filter((team: Team) => team.id !== user.team?.id).forEach((team: Team) => userTeams.push(team));
-                setTeams(userTeams);
-            } else {
-                setTeams(user?.teams ?? []);
+                if (user?.team) {
+                    const userTeams = [user.team];
+                    user.teams.filter((team: Team) => team.id !== user.team?.id).forEach((team: Team) => userTeams.push(team));
+                    setTeams(userTeams);
+                } else {
+                    setTeams(user?.teams ?? []);
+                }
+            } catch (error) {
+                console.error('Failed to fetch user data:', error);
+                setTeams([]);
             }
         }
     };
 
     useEffect(() => {
         loadUserData();
-    }, []);
+    }, [session]);
 
     useEffect(() => {
         const saved = localStorage.getItem('sidebar-collapsed');
@@ -104,9 +113,9 @@ export default function CollapsibleSidebar({navigation, session, status}: {navig
                 <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r px-6 border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
                     <div className="flex h-16 shrink-0 items-center justify-between">
                         <span className={classNames(isCollapsed ? 'opacity-0 hidden' : 'opacity-100', 'font-semibold text-gray-900 dark:text-white transition-opacity duration-200 ease-in-out')}>
-                            Navigation
+                            {t.sidebar.navigation}
                         </span>
-                        <button onClick={toggleSidebar} className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title={`${isCollapsed ? 'Expand' : 'Collapse'} sidebar (Ctrl+B)`}>
+                        <button onClick={toggleSidebar} className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title={`${isCollapsed ? t.sidebar.expand : t.sidebar.collapse} sidebar (Ctrl+B)`}>
                             {isCollapsed ? (
                                 <ChevronRightIcon className="h-5 w-5" />
                             ) : (
@@ -160,7 +169,7 @@ export default function CollapsibleSidebar({navigation, session, status}: {navig
 
                             {teams.length > 0 && !isCollapsed && (
                                 <li>
-                                    <div className="text-xs/6 font-semibold text-gray-400">Your teams</div>
+                                    <div className="text-xs/6 font-semibold text-gray-400">{t.sidebar.yourTeams}</div>
                                     <ul className="-mx-2 mt-2 space-y-1">
                                         {teams.map((team) => (
                                             <li key={team.id}>

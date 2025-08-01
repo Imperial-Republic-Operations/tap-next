@@ -1,7 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useState } from "react";
-import { fetchOrganizationMembers, OrganizationMember } from "@/lib/_organizations";
+import { OrganizationMember } from "@/lib/types";
+import { organizationsApi } from "@/lib/apiClient";
 import Pagination from "@/components/Pagination";
 import { MagnifyingGlassIcon, UserIcon } from "@heroicons/react/24/outline";
 import { classNames } from "@/lib/style";
@@ -39,11 +40,12 @@ export default function MembersList({ orgId }: {orgId: bigint}) {
     const loadMembers = useCallback(async (pageNumber: number) => {
         setLoading(true);
         try {
-            const {members, totalPages} = await fetchOrganizationMembers(orgId, pageNumber, {
+            const response = await organizationsApi.getOrganizationMembers(orgId, pageNumber, {
                 search: debouncedSearchTerm || undefined,
                 filterType,
                 sortBy,
             });
+            const {members, totalPages} = response.data;
             setMembers(members);
             setTotalPages(totalPages);
         } finally {
@@ -73,6 +75,22 @@ export default function MembersList({ orgId }: {orgId: bigint}) {
                 </span>
             );
         }
+
+        if (member.position && member.position.permissions.length > 0) {
+            return (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300">
+                    Dignitary
+                </span>
+            );
+        }
+
+        if (member.position && !member.rank) {
+            return (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                    Honorary
+                </span>
+            );
+        }
         
         if (member.rank?.tier === 'HIGH_COMMAND') {
             return (
@@ -84,7 +102,7 @@ export default function MembersList({ orgId }: {orgId: bigint}) {
 
         if (member.rank?.tier === 'OFFICER' || member.rank?.tier === 'COMMAND') {
             return (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
                     Officer
                 </span>
             );
@@ -92,7 +110,7 @@ export default function MembersList({ orgId }: {orgId: bigint}) {
 
         if (member.rank?.tier === 'ENLISTED') {
             return (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300">
                     Enlisted
                 </span>
             );

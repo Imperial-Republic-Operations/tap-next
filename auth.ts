@@ -9,34 +9,38 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         id: "nexus",
         name: "EOTIR Nexus",
         type: "oauth",
+        allowDangerousEmailAccountLinking: true,
         authorization: {
-            url: "https://nexus.eotir.dev/oauth/authorize/",
+            url: `${process.env.NEXT_PUBLIC_NEXUS_URL}/oauth/authorize/`,
             params: { scope: "profile email" }
         },
-        token: "https://nexus.eotir.dev/oauth/token/",
-        userinfo: "https://nexus.eotir.dev/api/core/me",
+        token: `${process.env.NEXT_PUBLIC_NEXUS_URL}/oauth/token/`,
+        userinfo: `${process.env.NEXT_PUBLIC_NEXUS_URL}/api/core/me`,
         client: {
             token_endpoint_auth_method: "client_secret_post"
         },
         clientId: process.env.AUTH_CLIENT_ID,
         clientSecret: process.env.AUTH_CLIENT_SECRET,
         profile(profile: any) {
-            const isLeadAdmin = process.env.LEAD_ADMIN && profile.primaryGroup.id === parseInt(process.env.LEAD_ADMIN);
-            const isSeniorAdmin = process.env.SENIOR_ADMIN && profile.primaryGroup.id === parseInt(process.env.SENIOR_ADMIN);
-            const isAdmin = process.env.ADMIN && profile.primaryGroup.id === parseInt(process.env.ADMIN);
-            const isStaff = process.env.STAFF && profile.primaryGroup.id === parseInt(process.env.STAFF);
+            console.log("Profile data from Nexus:", profile);
+
+            const isLeadAdmin = process.env.LEAD_ADMIN && profile.primaryGroup?.id === parseInt(process.env.LEAD_ADMIN);
+            const isSeniorAdmin = process.env.SENIOR_ADMIN && profile.primaryGroup?.id === parseInt(process.env.SENIOR_ADMIN);
+            const isAdmin = process.env.ADMIN && profile.primaryGroup?.id === parseInt(process.env.ADMIN);
+            const isStaff = process.env.STAFF && profile.primaryGroup?.id === parseInt(process.env.STAFF);
+
             return {
                 username: profile.name,
                 name: profile.name,
                 email: profile.email,
                 image: profile.photoUrl,
+                nexusId: profile.id.toString(), // Required field!
                 role: isLeadAdmin || isSeniorAdmin ? Role.SYSTEM_ADMIN : isAdmin ? Role.ASSISTANT_ADMIN : isStaff ? Role.STAFF : Role.PLAYER,
-                nexusId: profile.id.toString(),
             };
         },
     }],
     callbacks: {
-        async session({ session, user }) {
+        async session({session, user}) {
             return {
                 ...session,
                 user: {

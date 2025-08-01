@@ -1,12 +1,15 @@
-import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
-import { DocumentForView, fetchDocument, OrganizationDocumentFullDetails } from "@/lib/_documents";
+'use client';
+
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { DocumentForView, OrganizationDocumentFullDetails } from "@/lib/types";
 import { roles, userHasAccess } from "@/lib/roles";
-import { cookies } from "next/headers";
-import { fetchCharacterClearance } from "@/lib/_characters";
-import { getCharacterOrganizationAccess } from "@/lib/_organizations";
+import Cookies from "js-cookie";
 import { getMultiWordCapitalization } from "@/lib/style";
 import { DomSanitizer } from "@/components/DomSanitizer";
+import { documentsApi, charactersApi, organizationsApi } from "@/lib/apiClient";
+import { useEffect, useState } from "react";
+import { useFormatting } from '@/hooks/useFormatting';
 
 interface PageProps {
     params: Promise<{
@@ -40,67 +43,162 @@ function canCharacterReadDocument(document: any, character: any, memberships: an
     }
 }
 
-export default async function ViewDocument({params}: PageProps) {
-    const resolvedParams = await params;
-    const { type, id } = resolvedParams;
+export default function ViewDocument({params}: PageProps) {
+    const router = useRouter();
+    const { data: session, status } = useSession();
+    const { formatDateTime, t } = useFormatting();
+    const [document, setDocument] = useState<DocumentForView | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [resolvedParams, setResolvedParams] = useState<{type: string; id: string} | null>(null);
 
-    const documentId = BigInt(id);
-    if (!documentId) redirect('/documents');
+    // Resolve params
+    useEffect(() => {
+        params.then(setResolvedParams);
+    }, [params]);
 
-    if (type !== 'game' && type !== 'organization' && type !== 'personal') redirect('/documents');
+    useEffect(() => {
+        if (!resolvedParams) return;
 
-    const { session, status } = await getSession();
-    const document: DocumentForView | null = await fetchDocument(type, documentId);
+        const { type, id } = resolvedParams;
 
-    if (!document) redirect('/documents');
-
-    let canAccess = false;
-    let isAdmin = false;
-
-    if (session?.user) {
-        isAdmin = userHasAccess(roles[4], session.user);
-    }
-
-    if (type === 'game') {
-        canAccess = true;
-    } else if (type === 'personal') {
-        if (isAdmin) {
-            canAccess = true;
-        } else if (status === 'authenticated') {
-            const cookieStore = await cookies();
-            const activeCharacterId = cookieStore.get('activeCharacterId')?.value;
-
-            if (activeCharacterId) {
-                canAccess = document.authorId.toString() === activeCharacterId;
-            }
+        // Validate type
+        if (type !== 'game' && type !== 'organization' && type !== 'personal') {
+            router.push('/documents');
+            return;
         }
-    } else if (type === 'organization') {
-        if (isAdmin) {
-            canAccess = true;
-        } else if (status === 'authenticated') {
-            const cookieStore = await cookies();
-            const activeCharacterId = cookieStore.get('activeCharacterId')?.value;
 
-            if (activeCharacterId) {
-                const charId = BigInt(activeCharacterId)
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                setError(null);
 
-                const character = await fetchCharacterClearance(charId);
-
-                const { accessibleOrgIds, memberships } = await getCharacterOrganizationAccess(charId);
-
-                if (accessibleOrgIds.includes((document as OrganizationDocumentFullDetails).organizationId)) {
-                    canAccess = canCharacterReadDocument(document, character, memberships);
+                const documentId = BigInt(id);
+                if (!documentId) {
+                    router.push('/documents');
+                    return;
                 }
+
+                const response = await documentsApi.getDocument(type as 'game' | 'organization' | 'personal', documentId);
+                const documentData = response.data;
+
+                if (!documentData) {
+                    router.push('/documents');
+                    return;
+                }
+
+                setDocument(documentData);
+            } catch (err) {
+                console.error('Failed to fetch document:', err);
+                setError(t.common.error);
+                router.push('/documents');
+            } finally {
+                setLoading(false);
             }
-        }
+        };
+
+        fetchData();
+    }, [resolvedParams, router]);
+
+    // Check authorization after session and document are loaded
+    useEffect(() => {
+        if (status === 'loading' || loading || !document || !resolvedParams) return;
+
+        const checkAccess = async () => {
+            try {
+                let canAccess = false;
+                let isAdmin = false;
+
+                if (session?.user) {
+                    isAdmin = userHasAccess(roles[4], session.user);
+                }
+
+                if (resolvedParams.type === 'game') {
+                    canAccess = true;
+                } else if (resolvedParams.type === 'personal') {
+                    if (isAdmin) {
+                        canAccess = true;
+                    } else if (status === 'authenticated') {
+                        const activeCharacterId = Cookies.get('activeCharacterId');
+
+                        if (activeCharacterId) {
+                            canAccess = document.authorId.toString() === activeCharacterId;
+                        }
+                    }
+                } else if (resolvedParams.type === 'organization') {
+                    if (isAdmin) {
+                        canAccess = true;
+                    } else if (status === 'authenticated') {
+                        const activeCharacterId = Cookies.get('activeCharacterId');
+
+                        if (activeCharacterId) {
+                            const charId = BigInt(activeCharacterId);
+
+                            try {
+                                const [characterResponse, accessResponse] = await Promise.all([
+                                    charactersApi.getCharacterClearance(charId),
+                                    organizationsApi.getCharacterOrganizationAccess(charId)
+                                ]);
+
+                                const character = characterResponse.data;
+                                const { accessibleOrgIds, memberships } = accessResponse.data;
+
+                                if (accessibleOrgIds.includes((document as OrganizationDocumentFullDetails).organizationId)) {
+                                    canAccess = canCharacterReadDocument(document, character, memberships);
+                                }
+                            } catch (err) {
+                                console.error('Failed to check organization access:', err);
+                                canAccess = false;
+                            }
+                        }
+                    }
+                }
+
+                if (!canAccess) {
+                    router.push('/documents');
+                }
+            } catch (err) {
+                console.error('Failed to check access:', err);
+                router.push('/documents');
+            }
+        };
+
+        checkAccess();
+    }, [session, status, document, loading, resolvedParams, router]);
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+            </div>
+        );
     }
 
-    if (!canAccess) redirect('/documents');
+    if (error) {
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <div className="text-red-600 text-center">
+                    <p>{error}</p>
+                    <button 
+                        onClick={() => router.push('/documents')}
+                        className="mt-4 px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700"
+                    >
+                        {t.common.back}
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!document || !resolvedParams) {
+        return null;
+    }
+
+    const { type } = resolvedParams;
 
     return (
         <div className="px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-8xl">
-                {/* Loading state would be handled by Suspense boundary in layout */}
                 <div>
                     <div className="px-4 sm:px-0">
                         <h3 className="text-base/7 font-semibold text-gray-900 dark:text-white">
@@ -114,71 +212,69 @@ export default async function ViewDocument({params}: PageProps) {
                     <div className="mt-6">
                         <dl className="grid grid-cols-1 sm:grid-cols-2">
                             <div className="border-t border-gray-100 dark:border-white/10 px-4 py-6 sm:col-span-1 sm:px-0">
-                                <dt className="text-sm/6 font-medium text-gray-900 dark:text-white">Author</dt>
+                                <dt className="text-sm/6 font-medium text-gray-900 dark:text-white">{t.documents.author}</dt>
                                 <dd className="mt-1 text-sm/6 text-gray-700 dark:text-gray-400 sm:mt-2">
                                     {getAuthorName(document, type)}
                                 </dd>
                             </div>
 
                             <div className="border-t border-gray-100 dark:border-white/10 px-4 py-6 sm:col-span-1 sm:px-0">
-                                <dt className="text-sm/6 font-medium text-gray-900 dark:text-white">Status</dt>
+                                <dt className="text-sm/6 font-medium text-gray-900 dark:text-white">{t.documents.status}</dt>
                                 <dd className="mt-1 text-sm/6 text-gray-700 dark:text-gray-400 sm:mt-2">
                                     {getMultiWordCapitalization(document.status)}
                                 </dd>
                             </div>
 
                             <div className="border-t border-gray-100 dark:border-white/10 px-4 py-6 sm:col-span-1 sm:px-0">
-                                <dt className="text-sm/6 font-medium text-gray-900 dark:text-white">Document Type</dt>
+                                <dt className="text-sm/6 font-medium text-gray-900 dark:text-white">{t.documents.documentType}</dt>
                                 <dd className="mt-1 text-sm/6 text-gray-700 dark:text-gray-400 sm:mt-2">
-                                    {type === 'organization' ? `${(document as OrganizationDocumentFullDetails).type.name} Document` : `${getMultiWordCapitalization(type)} Document`}
+                                    {type === 'organization' ? `${(document as OrganizationDocumentFullDetails).type.name} ${t.documents.document}` : `${getMultiWordCapitalization(type)} ${t.documents.document}`}
                                 </dd>
                             </div>
 
                             <div className="border-t border-gray-100 dark:border-white/10 px-4 py-6 sm:col-span-1 sm:px-0">
-                                <dt className="text-sm/6 font-medium text-gray-900 dark:text-white">Creation Date</dt>
+                                <dt className="text-sm/6 font-medium text-gray-900 dark:text-white">{t.documents.creationDate}</dt>
                                 <dd className="mt-1 text-sm/6 text-gray-700 dark:text-gray-400 sm:mt-2">
-                                    {new Date(document.createdAt).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric',
-                                        hour: 'numeric',
-                                        minute: '2-digit',
-                                        second: '2-digit',
-                                        hour12: true
-                                    })}
+                                    {formatDateTime(document.createdAt)}
                                 </dd>
                             </div>
 
                             {type === 'organization' && (document as OrganizationDocumentFullDetails).organization && (
                                 <div className="border-t border-gray-100 dark:border-white/10 px-4 py-6 sm:col-span-2 sm:px-0">
-                                    <dt className="text-sm/6 font-medium text-gray-900 dark:text-white">Organization</dt>
+                                    <dt className="text-sm/6 font-medium text-gray-900 dark:text-white">{t.documents.organization}</dt>
                                     <dd className="mt-1 text-sm/6 text-gray-700 dark:text-gray-400 sm:mt-2">
                                         {(document as OrganizationDocumentFullDetails).organization.name}
                                     </dd>
                                 </div>
                             )}
 
-                            {type === 'organization' && (document as OrganizationDocumentFullDetails).assignees && (document as OrganizationDocumentFullDetails).assignees.length > 0 && (
+                            {type === 'organization' && (() => {
+                                const assignees = (document as OrganizationDocumentFullDetails).assignees;
+                                return assignees && assignees.length > 0;
+                            }) && (
                                 <div className="border-t border-gray-100 dark:border-white/10 px-4 py-6 sm:col-span-2 sm:px-0">
-                                    <dt className="text-sm/6 font-medium text-gray-900 dark:text-white">Assignees</dt>
+                                    <dt className="text-sm/6 font-medium text-gray-900 dark:text-white">{t.documents.assignees}</dt>
                                     <dd className="mt-1 text-sm/6 text-gray-700 dark:text-gray-400 sm:mt-2">
-                                        {(document as OrganizationDocumentFullDetails).assignees.map((assignee: any) => assignee.name).join(', ')}
+                                        {(document as OrganizationDocumentFullDetails).assignees?.map((assignee: any) => assignee.name).join(', ')}
                                     </dd>
                                 </div>
                             )}
 
                             <div className="border-t border-gray-100 dark:border-white/10 px-4 py-6 sm:col-span-2 sm:px-0">
-                                <dt className="text-sm/6 font-medium text-gray-900 dark:text-white">Content</dt>
+                                <dt className="text-sm/6 font-medium text-gray-900 dark:text-white">{t.documents.content}</dt>
                                 <dd className="mt-1 text-sm/6 text-gray-700 dark:text-gray-400 sm:mt-2">
                                     <DomSanitizer content={document.content} />
                                 </dd>
                             </div>
 
-                            {type === 'organization' && (document as OrganizationDocumentFullDetails).signers && (document as OrganizationDocumentFullDetails).signers.length > 0 && (
+                            {type === 'organization' && (() => {
+                                const signers = (document as OrganizationDocumentFullDetails).signers;
+                                return signers && signers.length > 0;
+                            }) && (
                                 <div className="border-t border-gray-100 dark:border-white/10 px-4 py-6 sm:col-span-2 sm:px-0">
-                                    <dt className="text-sm/6 font-medium text-gray-900 dark:text-white">Signed By</dt>
+                                    <dt className="text-sm/6 font-medium text-gray-900 dark:text-white">{t.documents.signedBy}</dt>
                                     <dd className="mt-1 text-sm/6 text-gray-700 dark:text-gray-400 sm:mt-2">
-                                        {(document as OrganizationDocumentFullDetails).signers.map((signer: any) => signer.name).join(', ')}
+                                        {(document as OrganizationDocumentFullDetails).signers?.map((signer: any) => signer.name).join(', ')}
                                     </dd>
                                 </div>
                             )}

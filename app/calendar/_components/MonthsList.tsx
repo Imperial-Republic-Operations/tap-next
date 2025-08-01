@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Month } from "@/lib/generated/prisma";
 import { classNames, getProperCapitalization } from "@/lib/style";
-import { fetchMonths, updateMonth } from "@/lib/_calendar";
+import { calendarApi } from "@/lib/apiClient";
 import { useForm } from "react-hook-form";
 
 export default function MonthsList({ admin }: { admin: boolean}) {
@@ -43,8 +43,8 @@ export default function MonthsList({ admin }: { admin: boolean}) {
         setIsLoading(true);
         setError(null);
         try {
-            const recordedMonths = await fetchMonths();
-            setMonths(recordedMonths);
+            const response = await calendarApi.getMonths();
+            setMonths(response.data);
         } catch (e) {
             setError('Failed to load months. Please try again.');
             console.error('Error loading months:', e);
@@ -59,7 +59,7 @@ export default function MonthsList({ admin }: { admin: boolean}) {
         setIsSubmitting(true);
         setError(null);
         try {
-            await updateMonth(editMonth!.realMonth, data.gameMonth);
+            await calendarApi.updateMonth(editMonth!.realMonth, data.gameMonth);
             refreshList();
         } catch (e) {
             setError('Failed to update month. Please try again.');

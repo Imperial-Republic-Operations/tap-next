@@ -1,7 +1,7 @@
 'use client'
 
 import { useNotificationQueue } from "@/components/NotificationProvider";
-import { createNotification } from "@/lib/_notifications";
+import { notificationsApi } from "@/lib/apiClient";
 
 interface DevNotificationTesterProps {
     userId: string;
@@ -12,7 +12,8 @@ export default function DevNotificationTester({ userId }: DevNotificationTesterP
 
     const handleSendTestNotification = async (link: boolean) => {
         const message = '🚀 This is a test notification.';
-        const notif = await createNotification(userId, message, link ? '/notifications/test' : undefined);
+        const response = await notificationsApi.createNotification(userId, message, link ? '/notifications/test' : undefined);
+        const notif = response.data;
         pushNotification(notif);
     }
 

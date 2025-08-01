@@ -6,6 +6,7 @@ import React from "react";
 import { NotificationProvider } from "@/components/NotificationProvider";
 import { getSession } from "@/lib/auth";
 import ScrollLockPreventer from "@/components/ScrollLockPreventer";
+import { SessionProvider } from "next-auth/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,16 +31,18 @@ export default async function RootLayout({
     <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col overflow-auto bg-white dark:bg-gray-900 dark:text-white`}
     >
-    <NotificationProvider userId={userId}>
-      <ScrollLockPreventer />
-      <nav id="header-wrapper" className="bg-white/80 backdrop-blur-md shadow-sm dark:bg-gray-800/80 dark:shadow-none top-0 z-50">
-      {/*<div className="sticky top-0 z-50">*/}
-        <Header />
-        <BreadcrumbWrapper />
-      {/*</div>*/}
-      </nav>
-      {children}
-    </NotificationProvider>
+    <SessionProvider>
+      <NotificationProvider userId={userId}>
+        <ScrollLockPreventer />
+        <nav id="header-wrapper" className="bg-white/80 backdrop-blur-md shadow-sm dark:bg-gray-800/80 dark:shadow-none top-0 z-50">
+          {/*<div className="sticky top-0 z-50">*/}
+          <Header />
+          <BreadcrumbWrapper />
+          {/*</div>*/}
+        </nav>
+        {children}
+      </NotificationProvider>
+    </SessionProvider>
     </body>
     </html>
   );

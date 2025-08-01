@@ -45,3 +45,4 @@ next-env.d.ts
 *.iml
 
 /lib/generated/prisma
+/terraform

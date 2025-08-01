@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Era, Year } from "@/lib/generated/prisma";
-import { createYear, fetchYears, makeYearCurrent } from "@/lib/_calendar";
+import { calendarApi } from "@/lib/apiClient";
 import Pagination from "@/components/Pagination";
 import { classNames } from "@/lib/style";
 import { FormProvider, useForm } from "react-hook-form";
@@ -59,7 +59,7 @@ export default function YearList({ admin, moderator }: { admin: boolean, moderat
         setYears(prev => prev.map(year => year.id === yearId ? {...year, current: true} : {...year, current: false}));
 
         try {
-            await makeYearCurrent(yearId);
+            await calendarApi.makeYearCurrent(yearId);
             await loadYears(filter, page);
         } catch (e) {
             await loadYears(filter, page);
@@ -74,7 +74,8 @@ export default function YearList({ admin, moderator }: { admin: boolean, moderat
         setIsLoading(true);
         setError(null);
         try {
-            const {years, totalPages} = currentFilter === 'ALL' ? await fetchYears(pageNumber) : await fetchYears(pageNumber, currentFilter);
+            const response = currentFilter === 'ALL' ? await calendarApi.getYears(pageNumber) : await calendarApi.getYears(pageNumber, currentFilter);
+            const {years, totalPages} = response.data;
             setYears(years);
             setTotalPages(totalPages);
         } catch (e) {
@@ -98,7 +99,7 @@ export default function YearList({ admin, moderator }: { admin: boolean, moderat
         setIsSubmitting(true);
         setError(null);
         try {
-            await createYear(data);
+            await calendarApi.createYear(data);
             refreshList();
         } catch (e) {
             setError('Failed to create year. Please try again.');

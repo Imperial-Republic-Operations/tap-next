@@ -2,17 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Notification } from "@/lib/generated/prisma";
-import {
-    deleteNotification,
-    fetchUndeletedNotifications,
-    markNotificationAsRead,
-    markUserNotificationsAsRead
-} from "@/lib/_notifications";
+import { notificationsApi } from "@/lib/apiClient";
 import { BellIcon, CheckIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { classNames } from "@/lib/style";
-import { formatDistanceToNow } from "date-fns";
+import { useFormatting } from "@/hooks/useFormatting";
 
 export default function NotificationsList({userId}: { userId: string }) {
+    const { formatRelativeTime, t } = useFormatting();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [page, setPage] = useState(0);
     const [firstLoad, setFirstLoad] = useState(true);
@@ -27,7 +23,8 @@ export default function NotificationsList({userId}: { userId: string }) {
 
         setLoading(true);
         try {
-            const { notifications: newNotifications, totalPages } = await fetchUndeletedNotifications(userId, pageNum);
+            const response = await notificationsApi.getUndeletedNotifications(userId, pageNum);
+            const { notifications: newNotifications, totalPages } = response.data;
             // await markUserNotificationsAsRead(userId);
 
             if (pageNum === 0) {
@@ -50,7 +47,7 @@ export default function NotificationsList({userId}: { userId: string }) {
         if (notification.read) return;
 
         try {
-            await markNotificationAsRead(notification.id);
+            await notificationsApi.markNotificationAsRead(notification.id);
             setNotifications(prev => prev.map(n => n.id === notification.id ? { ...n, read: true } : n));
         } catch (e) {
             console.error('Failed to mark notification as read.', e);
@@ -59,7 +56,7 @@ export default function NotificationsList({userId}: { userId: string }) {
 
     const handleDelete = async (notificationId: bigint) => {
         try {
-            await deleteNotification(notificationId);
+            await notificationsApi.deleteNotification(notificationId);
             setNotifications(prev => prev.filter(n => n.id !== notificationId));
         } catch (e) {
             console.error('Failed to delete notification.', e);
@@ -71,7 +68,7 @@ export default function NotificationsList({userId}: { userId: string }) {
 
         setMarkingAllRead(true);
         try {
-            await markUserNotificationsAsRead(userId);
+            await notificationsApi.markAllUserNotificationsAsRead(userId);
             setNotifications(prev => prev.map(n => ({ ...n, read: true})));
         } catch (e) {
             console.error('Failed to mark all as read.', e);
@@ -120,8 +117,8 @@ export default function NotificationsList({userId}: { userId: string }) {
         return (
             <div className="text-center py-12">
                 <BellIcon className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No notifications</h3>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">You&apos;re all caught up!</p>
+                <h3 className="mt-2 text-sm font-semibold text-gray-900 dark:text-white">{t.common.noNotifications}</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t.common.allCaughtUp}</p>
             </div>
         );
     }
@@ -137,7 +134,7 @@ export default function NotificationsList({userId}: { userId: string }) {
                         className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 disabled:opacity-50"
                     >
                         <CheckIcon className="h-4 w-4 mr-2" />
-                        {markingAllRead ? 'Marking...' : 'Mark all as read'}
+                        {markingAllRead ? t.common.markingAsRead : t.common.markAllAsRead}
                     </button>
                 </div>
             )}
@@ -172,7 +169,7 @@ export default function NotificationsList({userId}: { userId: string }) {
                                                 </p>
                                                 <div className="ml-2 flex-shrink-0 flex">
                                                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                        {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                                                        {formatRelativeTime(notification.createdAt)}
                                                     </p>
                                                 </div>
                                             </div>
@@ -183,7 +180,7 @@ export default function NotificationsList({userId}: { userId: string }) {
                                                         className="text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
                                                         onClick={(e) => e.stopPropagation()}
                                                     >
-                                                        View details →
+                                                        {t.common.viewDetails}
                                                     </a>
                                                 </div>
                                             )}
@@ -226,7 +223,7 @@ export default function NotificationsList({userId}: { userId: string }) {
             {/* End of list message */}
             {!hasMore && notifications.length > 0 && (
                 <div className="text-center py-4 text-sm text-gray-500 dark:text-gray-400">
-                    No more notifications
+                    {t.common.noMoreNotifications}
                 </div>
             )}
         </div>

@@ -4,7 +4,11 @@ import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { $Enums, Gender, HonoraryTitle } from "@/lib/generated/prisma";
 import { classNames, getMultiWordCapitalization, getProperCapitalization } from "@/lib/style";
 import { useState } from "react";
-import { CharacterDetails, CharacterForceProfile, CharacterMembership } from "@/lib/_characters";
+import { CharacterDetails, CharacterForceProfile, CharacterMembership } from "@/lib/types";
+import { useSession } from "next-auth/react";
+import { roles, userHasAccess } from "@/lib/roles";
+import { charactersApi } from "@/lib/apiClient";
+import { useRouter } from "next/navigation";
 import DomainRank = $Enums.DomainRank;
 
 const mannerOfAddressMap: Record<DomainRank | HonoraryTitle, Record<Gender, string>> = {
@@ -29,6 +33,9 @@ const mannerOfAddressMap: Record<DomainRank | HonoraryTitle, Record<Gender, stri
 
 export default function ViewCharacterTab({ character }: { character: CharacterDetails }) {
     const [tab, setTab] = useState<'details' | 'positions' | 'signature' | 'force'>('details');
+    const [claiming, setClaiming] = useState(false);
+    const { data: session } = useSession();
+    const router = useRouter();
 
     const primaryMembership = character.memberships?.find(
         (member) => member.primaryMembership
@@ -120,7 +127,7 @@ export default function ViewCharacterTab({ character }: { character: CharacterDe
         const organization = member.organization;
 
         if (organization.name !== 'Throne') {
-            if (organization.name === 'Imperial Republic' || organization.name === 'High Council' || organization.name === 'Praetorian') {
+            if (organization.name === 'Imperial Republic' || organization.name === 'High Council' || organization.name === 'Praetorian Order') {
                 if (position) {
                     return '<p>' + position.name + '</p>';
                 } else if (rank) {
@@ -154,6 +161,25 @@ export default function ViewCharacterTab({ character }: { character: CharacterDe
         return "";
     }
 
+    const handleClaimNPC = async () => {
+        if (!session?.user || claiming) return;
+        
+        setClaiming(true);
+        try {
+            await charactersApi.claimNPC(character.id);
+            // Redirect back to characters page after claiming
+            router.push('/characters');
+        } catch (error) {
+            console.error('Failed to claim NPC:', error);
+        } finally {
+            setClaiming(false);
+        }
+    }
+
+    // Check if this character is an NPC (no approvalStatus means it's an NPC)
+    const isNPC = !character.approvalStatus;
+    const canClaimNPC = isNPC && session?.user && userHasAccess(roles[2], session.user); // STAFF level
+
     return (
         <>
             <h2 className={
@@ -178,6 +204,32 @@ export default function ViewCharacterTab({ character }: { character: CharacterDe
                         <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z"/>
                     </svg>
                 </span>
+            )}
+
+            {/* Claim NPC Button */}
+            {canClaimNPC && (
+                <div className="mt-4 mb-4 flex justify-center">
+                    <button
+                        onClick={handleClaimNPC}
+                        disabled={claiming}
+                        className={classNames(
+                            claiming ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary-700',
+                            'inline-flex items-center rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary-600'
+                        )}
+                    >
+                        {claiming ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Claiming...
+                            </>
+                        ) : (
+                            'Claim NPC'
+                        )}
+                    </button>
+                </div>
             )}
 
             <div className="mt-3 mb-7">

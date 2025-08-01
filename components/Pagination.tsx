@@ -1,6 +1,7 @@
 'use client'
 
 import { classNames } from "@/lib/style";
+import { useFormatting } from '@/hooks/useFormatting';
 
 type Props = {
     currentPage: number;
@@ -9,6 +10,7 @@ type Props = {
 };
 
 export default function Pagination({ currentPage, totalPages, onPageChange }: Props) {
+    const { t } = useFormatting();
     const isNumber = (value: unknown): value is number => typeof value === 'number';
 
     const getPages = (): (number | string)[] => {
@@ -43,7 +45,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pr
                             clipRule="evenodd"
                         />
                     </svg>
-                    Previous
+                    {t.common.previous}
                 </button>
             </div>
 
@@ -68,7 +70,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pr
                     onClick={() => currentPage + 1 < totalPages && onPageChange(currentPage + 1)}
                     className={classNames(currentPage + 1 >= totalPages && 'cursor-not-allowed', 'inline-flex items-center border-t-2 border-transparent pt-4 pl-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300')}
                 >
-                    Next
+                    {t.common.next}
                     <svg className="ml-3 size-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path
                             fillRule="evenodd"

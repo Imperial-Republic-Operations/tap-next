@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CharacterDetails, fetchCharacter } from "@/lib/_characters";
-import { fetchInventoryCounts, InventoryContents } from "@/lib/_inventory";
+import { CharacterDetails, InventoryContents } from "@/lib/types";
+import { charactersApi, inventoryApi } from "@/lib/apiClient";
 import { CreditAccount, InventoryType, Item, Ship, Vehicle } from "@/lib/generated/prisma";
 import InventoryStatCard from "@/app/inventory/_components/InventoryStatCard";
 import Cookies from 'js-cookie';
@@ -39,7 +39,8 @@ export default function InventoryDashboard() {
     };
 
     const loadInventory = async() => {
-        const {inventory, creditAccount}: { inventory: InventoryContents | null, creditAccount: CreditAccount | null } = await fetchInventoryCounts(selectedTarget!.id, selectedTarget!.type);
+        const response = await inventoryApi.getInventory(selectedTarget!.id, selectedTarget!.type);
+        const {inventory, creditAccount}: { inventory: InventoryContents | null, creditAccount: CreditAccount | null } = response.data;
         if (inventory) {
             setItems(inventory.items);
             setShips(inventory.ships);
@@ -68,7 +69,8 @@ export default function InventoryDashboard() {
     useEffect(() => {
         if (!activeCharacterId) return;
         const load = async () => {
-            const character: CharacterDetails = (await fetchCharacter(BigInt(activeCharacterId)))!;
+            const response = await charactersApi.getCharacter(BigInt(activeCharacterId));
+            const character: CharacterDetails = response.data;
             const memberships = character.memberships;
 
             const orgs = memberships

@@ -18,42 +18,49 @@ import MobileNavbarLink from "@/components/MobileNavbarLink";
 import { fetchUnreadNotificationCount } from "@/lib/_notifications";
 import NotificationBell from "@/components/NotificationBell";
 import { getSession } from "@/lib/auth";
+import { getServerTranslations } from '@/lib/i18nServer';
 
-const navigationConfig = {
-    main: [
-        { title: "Home", route: "/", exact: true, signInRequired: false, role: null, devOnly: false },
-        { title: "Characters", route: "/characters", exact: false, signInRequired: true, role: roles[1], devOnly: false },
-        { title: "Organizations", route: "/organizations", exact: false, signInRequired: false, role: null, devOnly: false },
-        { title: "Documents", route: "/documents", exact: false, signInRequired: false, role: null, devOnly: false },
-        { title: "Inventory", route: "/inventory", exact: false, signInRequired: true, role: roles[1], devOnly: false },
-    ],
-    dropdown: {
-        title: "More",
-        sections: [
-            {
-                label: "Administration",
-                items: [
-                    { title: "User Administration", route: "/users", exact: false, signInRequired: true, role: roles[4], devOnly: false },
-                    { title: "Calendar Settings", route: "/calendar", exact: false, signInRequired: true, role: roles[3], devOnly: false },
-                    { title: "Notifications Test", route: "/notifications/test", exact: false, signInRequired: true, role: roles[6], devOnly: true },
-                ]
-            }
+function getNavigationConfig(t: any) {
+    return {
+        main: [
+            { title: t.header.home, route: "/", exact: true, signInRequired: false, role: null, devOnly: false },
+            { title: t.header.characters, route: "/characters", exact: false, signInRequired: true, role: roles[1], devOnly: false },
+            { title: t.header.organizations, route: "/organizations", exact: false, signInRequired: false, role: null, devOnly: false },
+            { title: t.header.documents, route: "/documents", exact: false, signInRequired: false, role: null, devOnly: false },
+            { title: t.header.inventory, route: "/inventory", exact: false, signInRequired: true, role: roles[1], devOnly: false },
         ],
-    }
-};
+        dropdown: {
+            title: t.header.more,
+            sections: [
+                {
+                    label: t.header.administration,
+                    items: [
+                        { title: t.header.userAdministration, route: "/users", exact: false, signInRequired: true, role: roles[4], devOnly: false },
+                        { title: t.header.calendarSettings, route: "/calendar", exact: false, signInRequired: true, role: roles[3], devOnly: false },
+                        { title: t.header.notificationsTest, route: "/notifications/test", exact: false, signInRequired: true, role: roles[6], devOnly: true },
+                    ]
+                }
+            ],
+        }
+    };
+}
 
-const allNavigationItems = [
-    ...navigationConfig.main,
-    ...navigationConfig.dropdown.sections.flatMap(section => section.items),
-]
-
-const dropdown = [
-    { title: "Profile", route: "/profile", signInRequired: true },
-    { title: "Settings", route: "/settings", signInRequired: true },
-];
+function getDropdownConfig(t: any) {
+    return [
+        { title: t.header.profile, route: "/profile", signInRequired: true },
+        { title: t.header.settings, route: "/settings", signInRequired: true },
+    ];
+}
 
 export default async function Header() {
     const {session, status} = await getSession();
+    const t = await getServerTranslations(session?.user?.id);
+    const navigationConfig = getNavigationConfig(t);
+    const dropdown = getDropdownConfig(t);
+    const allNavigationItems = [
+        ...navigationConfig.main,
+        ...navigationConfig.dropdown.sections.flatMap(section => section.items),
+    ];
     let characters: { id: bigint, name: string, avatarLink: string | null }[] = [];
     let activeCharacter: { id: bigint, name: string, avatarLink: string | null } | undefined = undefined;
     let hasNotifications = false;
@@ -113,7 +120,7 @@ export default async function Header() {
                         <DisclosureButton
                             className="group relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 focus:ring-2 focus:outline-hidden focus:ring-inset hover:bg-gray-700 hover:text-white focus:ring-white dark:hover:bg-gray-100 dark:hover:text-gray-500 dark:focus:ring-primary-500">
                             <span className="absolute -inset-0.5"></span>
-                            <span className="sr-only">Open main menu</span>
+                            <span className="sr-only">{t.header.openMainMenu}</span>
                             <Bars3Icon aria-hidden="true" className="block size-6 group-data-open:hidden" />
                             <XMarkIcon aria-hidden="true" className="hidden size-6 group-data-open:block" />
                         </DisclosureButton>
@@ -178,7 +185,7 @@ export default async function Header() {
                                     <MenuButton
                                         className="relative flex rounded-full text-sm focus:ring-2 focus:ring-offset-2 focus:outline-hidden bg-gray-800 focus:ring-white focus:ring-offset-gray-800 dark:bg-white dark:focus:ring-primary-500">
                                         <span className="absolute -inset-1.5"></span>
-                                        <span className="sr-only">Open character menu</span>
+                                        <span className="sr-only">{t.header.openCharacterMenu}</span>
                                         {characters.length > 0 && activeCharacter ? (
                                             <img
                                                 id="character-avatar"
@@ -214,7 +221,7 @@ export default async function Header() {
                                 <MenuButton
                                     className="relative flex rounded-full text-sm focus:ring-2 focus:ring-offset-2 focus:outline-hidden bg-gray-800 focus:ring-white focus:ring-offset-gray-800 dark:bg-white dark:focus:ring-primary-500">
                                     <span className="absolute -inset-1.5"></span>
-                                    <span className="sr-only">Open user menu</span>
+                                    <span className="sr-only">{t.header.openUserMenu}</span>
                                     {status === "authenticated" ? (
                                         <img
                                             className="size-8 rounded-full"
@@ -247,7 +254,7 @@ export default async function Header() {
                                             else return await signIn('nexus');
                                         }}>
                                         <button type="submit" className="cursor-pointer block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden w-full text-left">
-                                            {status === "authenticated" ? "Logout" : "Login"}
+                                            {status === "authenticated" ? t.header.logout : t.header.login}
                                         </button>
                                     </form>
                                 </MenuItem>

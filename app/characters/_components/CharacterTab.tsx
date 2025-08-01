@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
-import { CharacterProfile, fetchCharacters } from "@/lib/_characters";
+import { CharacterProfile } from "@/lib/types";
+import { charactersApi } from "@/lib/apiClient";
 import Pagination from "@/components/Pagination";
 import { classNames, getProperCapitalization } from "@/lib/style";
 
@@ -97,10 +98,12 @@ export default function CharacterTab({ userId, admin }: { userId: string, admin:
         }
     }
 
+
     const loadCharacters = async (user: string, tabName: 'personal' | 'npc', pageNumber: number) => {
         setLoading(true);
         try {
-            const {characters, totalPages} = await fetchCharacters(user, tabName, pageNumber);
+            const response = await charactersApi.getCharacters(user, tabName, pageNumber);
+            const {characters, totalPages} = response.data;
             setCharacters(characters);
             setTotalPages(totalPages);
         } finally {
@@ -254,7 +257,7 @@ export default function CharacterTab({ userId, admin }: { userId: string, admin:
                                     <button
                                         onClick={() => handleCharacterAction(character)}
                                         disabled={!actionState.canPerformAction || isSubmitting}
-                                        className={classNames(actionState.canPerformAction && !isSubmitting ? 'text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer' : 'text-gray-400 dark:text-gray-600 cursor-not-allowed', 'group relative -mr-px inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-bl-lg border border-transparent py-4 text-sm font-semibold')}>
+                                        className={classNames(actionState.canPerformAction && !isSubmitting ? 'text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer' : 'text-gray-400 dark:text-gray-600 cursor-not-allowed', 'group relative -mr-px inline-flex w-0 flex-1 items-center justify-center gap-x-3 border border-transparent py-4 text-sm font-semibold rounded-bl-lg')}>
                                         {isSubmitting ? (
                                             <>
                                                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -280,9 +283,9 @@ export default function CharacterTab({ userId, admin }: { userId: string, admin:
                                     </button>
                                 </div>
                                 <div className="-ml-px flex w-0 flex-1">
-                                    <a href={'/characters/edit/' + character.id} className="relative inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    Edit
-                                </a>
+                                    <a href={'/characters/edit/' + character.id} className="relative inline-flex w-0 flex-1 items-center justify-center gap-x-3 border border-transparent py-4 text-sm font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 rounded-br-lg">
+                                        Edit
+                                    </a>
                                 </div>
                             </div>
                         </div>

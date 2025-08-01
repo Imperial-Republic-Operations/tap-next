@@ -1,5 +1,7 @@
-import { fetchOrganizationParents } from "@/lib/_organizations";
-import { prisma } from "@/lib/prisma";
+'use client';
+
+import { useEffect, useState } from "react";
+import { organizationsApi } from "@/lib/apiClient";
 import { BuildingLibraryIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
@@ -15,31 +17,48 @@ interface OrganizationHierarchyProp {
     };
 }
 
-export default async function OrganizationHierarchy({ organization }: OrganizationHierarchyProp) {
-    const parents = await fetchOrganizationParents(organization.id);
+export default function OrganizationHierarchy({ organization }: OrganizationHierarchyProp) {
+    const [parents, setParents] = useState<any[]>([]);
+    const [sisterOrgs, setSisterOrgs] = useState<{ id: bigint, name: string; abbreviation: string; }[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const parentsResponse = await organizationsApi.getOrganizationParents(organization.id);
+                const fetchedParents = parentsResponse.data;
+                setParents(fetchedParents);
+
+                if (organization.parent) {
+                    const sisterResponse = await organizationsApi.getSisterOrganizations(organization.parent.id, organization.id);
+                    setSisterOrgs(sisterResponse.data);
+                }
+            } catch (error) {
+                console.error('Error fetching organization hierarchy data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [organization]);
 
     const breadcrumbs = [...parents].reverse();
-
-    let sisterOrgs: { id: bigint, name: string; abbreviation: string; }[] = [];
-    if (organization.parent) {
-        sisterOrgs = await prisma.organization.findMany({
-            where: {
-                parentId: organization.parent.id,
-                id: { not: organization.id }
-            },
-            select: {
-                id: true,
-                name: true,
-                abbreviation: true,
-            },
-            orderBy: { name: 'asc' },
-            take: 10,
-        });
-    }
 
     const getTypeDisplay = (type: string) => {
         return type.charAt(0).toUpperCase() + type.substring(1).toLowerCase();
     };
+
+    if (loading) {
+        return (
+            <div className="mb-6">
+                <div className="animate-pulse">
+                    <div className="h-4 bg-gray-200 rounded w-48 mb-4"></div>
+                    <div className="h-20 bg-gray-100 dark:bg-gray-800 rounded-lg"></div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="mb-6">

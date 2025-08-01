@@ -1,28 +1,36 @@
-import React from "react";
+'use client';
+
+import React, { useEffect, useState } from "react";
 import { roles } from "@/lib/roles";
-import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+import { useSession } from "next-auth/react";
 import CollapsibleSidebar from "@/components/CollapsibleSidebar";
+import { charactersApi } from "@/lib/apiClient";
 
-const navigationLinks: {title: string, path: string, exact: boolean, signInRequired: boolean, role?: string, badge?: number}[] = [
-    { title: "Dashboard", path: "/characters", exact: true, signInRequired: true, role: roles[1] },
-    { title: "Approval Queue", path: "/characters/pending", exact: false, signInRequired: true, role: roles[3], badge: await getPendingCharacterCount() }
-];
-
-async function getPendingCharacterCount(): Promise<number> {
-    const pending = await prisma.character.findMany({
-        where: { approvalStatus: "PENDING" }
-    });
-
-    return pending.length;
-}
-
-export default async function CharacterLayout({
+export default function CharacterLayout({
                                        children,
                                    }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const {session, status} = await getSession();
+    const { data: session, status } = useSession();
+    const [pendingCount, setPendingCount] = useState<number>(0);
+
+    useEffect(() => {
+        const fetchPendingCount = async () => {
+            try {
+                const response = await charactersApi.getPendingCharacters(0);
+                setPendingCount(response.data.totalCount || 0);
+            } catch (error) {
+                console.error('Failed to fetch pending character count:', error);
+            }
+        };
+
+        fetchPendingCount();
+    }, []);
+
+    const navigationLinks: {title: string, path: string, exact: boolean, signInRequired: boolean, role?: string, badge?: number}[] = [
+        { title: "Dashboard", path: "/characters", exact: true, signInRequired: true, role: roles[1] },
+        { title: "Approval Queue", path: "/characters/pending", exact: false, signInRequired: true, role: roles[3], badge: pendingCount }
+    ];
 
     return(
         <div className="flex">

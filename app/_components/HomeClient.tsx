@@ -1,12 +1,11 @@
 'use client'
 
 import { Session } from "next-auth";
-import { CharacterDetails } from "@/lib/_characters";
+import { CharacterDetails } from "@/lib/types";
 import {
     Activity,
     Award,
     BarChart3,
-    Bell,
     FileText,
     Package,
     Settings,
@@ -19,13 +18,28 @@ import {
 } from "lucide-react";
 import { roles, userHasAccess } from "@/lib/roles";
 
+interface DashboardStats {
+    totalCharacters: number;
+    totalOrganizations: number;
+    totalDocuments: number;
+    totalAwards: number;
+    pendingCharacters: number;
+    pendingDocuments: number;
+    flaggedDocuments: number;
+    characterCredits: number;
+    characterYearsOfService: number;
+    characterCompletedMissions: number;
+}
+
 interface HomeClientProps {
     session: Session | null | undefined;
     status: 'authenticated' | 'unauthenticated';
     activeCharacter: CharacterDetails | undefined;
+    dashboardStats: DashboardStats;
+    statsLoading: boolean;
 }
 
-export default function HomeClient({session, status, activeCharacter}: HomeClientProps) {
+export default function HomeClient({session, status, activeCharacter, dashboardStats, statsLoading}: HomeClientProps) {
     const primaryMembership = activeCharacter?.memberships.find(
         (member) => member.primaryMembership
     );
@@ -147,10 +161,10 @@ export default function HomeClient({session, status, activeCharacter}: HomeClien
                 <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-12 border border-white/10">
                     <div className="grid md:grid-cols-4 gap-8 text-center">
                         {[
-                            { number: '2,847', label: 'Active Characters', icon: User },
-                            { number: '156', label: 'Organizations', icon: Users },
-                            { number: '12,439', label: 'Documents Filed', icon: FileText },
-                            { number: '3,721', label: 'Awards Granted', icon: Award }
+                            { number: statsLoading ? '...' : dashboardStats.totalCharacters.toLocaleString(), label: 'Active Characters', icon: User },
+                            { number: statsLoading ? '...' : dashboardStats.totalOrganizations.toString(), label: 'Organizations', icon: Users },
+                            { number: statsLoading ? '...' : dashboardStats.totalDocuments.toLocaleString(), label: 'Documents Filed', icon: FileText },
+                            { number: statsLoading ? '...' : dashboardStats.totalAwards.toLocaleString(), label: 'Awards Granted', icon: Award }
                         ].map((stat, index) => (
                             <div key={index} className="group">
                                 <stat.icon className="w-8 h-8 text-blue-400 mx-auto mb-4 group-hover:text-purple-400 transition-colors duration-300" />
@@ -168,12 +182,11 @@ export default function HomeClient({session, status, activeCharacter}: HomeClien
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {[
                             { label: 'Merit Score', value: 'N/a', icon: Star, color: 'text-yellow-600' },
                             { label: 'Active Missions', value: '0', icon: Activity, color: 'text-blue-600' },
-                            { label: 'Credits', value: '15.2K', icon: TrendingUp, color: 'text-green-600' },
-                            { label: 'Notifications', value: '7', icon: Bell, color: 'text-red-600' }
+                            { label: 'Credits', value: statsLoading ? '...' : dashboardStats.characterCredits.toLocaleString(), icon: TrendingUp, color: 'text-green-600' }
                         ].map((stat, index) => (
                             <div key={index} className="flex items-center space-x-3">
                                 <stat.icon className={`w-5 h-5 ${stat.color}`} />
@@ -224,11 +237,11 @@ export default function HomeClient({session, status, activeCharacter}: HomeClien
                             <div className="p-6">
                                 <div className="grid md:grid-cols-3 gap-6">
                                     <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <div className="text-2xl font-bold text-gray-900 dark:text-white">0</div>
+                                        <div className="text-2xl font-bold text-gray-900 dark:text-white">{statsLoading ? '...' : dashboardStats.characterYearsOfService}</div>
                                         <div className="text-sm text-gray-600 dark:text-gray-400">Years Service</div>
                                     </div>
                                     <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <div className="text-2xl font-bold text-gray-900 dark:text-white">0</div>
+                                        <div className="text-2xl font-bold text-gray-900 dark:text-white">{statsLoading ? '...' : dashboardStats.characterCompletedMissions}</div>
                                         <div className="text-sm text-gray-600 dark:text-gray-400">Completed Missions</div>
                                     </div>
                                     <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -306,15 +319,15 @@ export default function HomeClient({session, status, activeCharacter}: HomeClien
                                 </div>
                                 <div className="grid md:grid-cols-3 gap-4">
                                     <a href="/admin/characters/pending" className="bg-white dark:bg-gray-800 p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                        <div className="text-2xl font-bold text-red-600 dark:text-red-400">12</div>
+                                        <div className="text-2xl font-bold text-red-600 dark:text-red-400">{statsLoading ? '...' : dashboardStats.pendingCharacters}</div>
                                         <div className="text-sm text-gray-600 dark:text-gray-400">Pending Character Approvals</div>
                                     </a>
-                                    <a href="/admin/awards/pending" className="bg-white dark:bg-gray-800 p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                        <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">8</div>
-                                        <div className="text-sm text-gray-600 dark:text-gray-400">Award Nominations</div>
+                                    <a href="/admin/documents/pending" className="bg-white dark:bg-gray-800 p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                        <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{statsLoading ? '...' : dashboardStats.pendingDocuments}</div>
+                                        <div className="text-sm text-gray-600 dark:text-gray-400">Pending Documents</div>
                                     </a>
                                     <a href="/admin/moderation" className="bg-white dark:bg-gray-800 p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                        <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">5</div>
+                                        <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{statsLoading ? '...' : dashboardStats.flaggedDocuments}</div>
                                         <div className="text-sm text-gray-600 dark:text-gray-400">Flagged Documents</div>
                                     </a>
                                 </div>
