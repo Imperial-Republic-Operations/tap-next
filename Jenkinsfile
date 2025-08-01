@@ -82,45 +82,41 @@ pipeline {
             }
         }
 
-        stage('Build & Test') {
-            parallel {
-                stage('Install Dependencies') {
-                    steps {
-                        sh '''
-                            echo "📦 Installing dependencies..."
-                            # Use npm install for flexibility in case lock file is out of sync
-                            npm install --no-audit
-                        '''
-                    }
-                }
-
-                stage('Run Tests') {
-                    steps {
-                        sh '''
-                            echo "🧪 Running tests..."
-                            npm run test
-                        '''
-                        
-                        // Publish test results if available
-                        script {
-                            if (fileExists('coverage/lcov.info')) {
-                                publishCoverage adapters: [lcovAdapter('coverage/lcov.info')], 
-                                    sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
-                            }
-                        }
-                    }
-                }
-
-                /*stage('Lint & Type Check') {
-                    steps {
-                        sh '''
-                            echo "🔍 Running linter..."
-                            npm run lint
-                        '''
-                    }
-                }*/
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                    echo "📦 Installing dependencies..."
+                    # Use npm install for flexibility in case lock file is out of sync
+                    npm install --no-audit
+                '''
             }
         }
+
+        stage('Run Tests') {
+            steps {
+                sh '''
+                    echo "🧪 Running tests..."
+                    npm run test
+                '''
+
+                // Publish test results if available
+                script {
+                    if (fileExists('coverage/lcov.info')) {
+                        publishCoverage adapters: [lcovAdapter('coverage/lcov.info')],
+                        sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
+                    }
+                }
+            }
+        }
+
+        /*stage('Lint & Type Check') {
+            steps {
+                sh '''
+                    echo "🔍 Running linter..."
+                    npm run lint
+                '''
+            }
+        }*/
 
         stage('Build & Push Docker Image') {
             steps {
