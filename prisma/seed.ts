@@ -8,7 +8,7 @@ import {
     Permission,
     PrismaClient, RankTier,
     RealMonth
-} from "@/lib/generated/prisma";
+} from "../lib/generated/prisma";
 
 const prisma = new PrismaClient();
 
