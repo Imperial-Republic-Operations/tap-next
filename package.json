@@ -47,6 +47,7 @@
     "@types/node": "^20.19.9",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "ci-info": "^4.3.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
     "jest": "^30.0.5",
@@ -56,7 +57,9 @@
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "undici": "^7.13.0",
+    "whatwg-fetch": "^3.6.20"
   },
   "eslintConfig": {
     "extends": "next",
