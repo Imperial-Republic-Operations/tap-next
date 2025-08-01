@@ -54,6 +54,7 @@ COPY --from=builder /app/.next/static ./.next/static
 
 # Copy Prisma files and generated client
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/lib/generated ./lib/generated
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/package*.json ./
