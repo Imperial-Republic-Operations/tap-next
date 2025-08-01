@@ -1,7 +1,7 @@
 'use server'
 
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@/lib/generated/prisma";
+import { Prisma, Role } from "@/lib/generated/prisma";
 
 export type UserWithTeamAndTeams = Prisma.UserGetPayload<{
     include: {
@@ -93,7 +93,7 @@ export async function updateUserSettings(
     });
 }
 
-export async function fetchAllUsers(page: number = 0, search: string = '', roleFilter: string = '') {
+export async function fetchAllUsers(page: number = 0, search: string = '', roleFilter: '' | Role = '') {
     const limit = 20;
     const offset = page * limit;
     

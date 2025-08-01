@@ -3,6 +3,7 @@ import { getSession } from "@/lib/auth";
 import { userHasAccess, roles } from "@/lib/roles";
 import { fetchAllUsers, updateUserRole } from "@/lib/_users";
 import { safeStringify } from "@/lib/api";
+import { Role } from "@/lib/generated/prisma";
 
 export async function GET(request: NextRequest) {
     try {
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
         const url = new URL(request.url);
         const page = parseInt(url.searchParams.get('page') || '0');
         const search = url.searchParams.get('search') || '';
-        const roleFilter = url.searchParams.get('role') || '';
+        const roleFilter = (url.searchParams.get('role') || '') as '' | Role;
 
         const result = await fetchAllUsers(page, search, roleFilter);
         return new Response(safeStringify(result), { headers: { 'Content-Type': 'application/json' } });
@@ -41,7 +42,7 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ error: "Invalid role" }, { status: 400 });
         }
 
-        // Prevent changing own role unless SYSTEM_ADMIN
+        // Prevent changing your own role unless SYSTEM_ADMIN
         if (userId === session?.user?.id && !userHasAccess(roles[6], session?.user)) {
             return NextResponse.json({ error: "Cannot change your own role" }, { status: 403 });
         }
