@@ -12,7 +12,7 @@ pipeline {
         
         // Environment determined by branch
         // ENVIRONMENT = "${env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'master' ? 'production' : 'stage'}"
-        EMVIRONMENT = 'stage'
+        ENVIRONMENT = 'stage'
         
         // AWS credentials - configure these in Jenkins credentials
         AWS_CREDENTIALS = credentials('aws-credentials')
