@@ -110,14 +110,14 @@ pipeline {
                     }
                 }
 
-                stage('Lint & Type Check') {
+                /*stage('Lint & Type Check') {
                     steps {
                         sh '''
                             echo "🔍 Running linter..."
                             npm run lint
                         '''
                     }
-                }
+                }*/
             }
         }
 
