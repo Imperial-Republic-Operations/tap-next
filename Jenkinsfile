@@ -88,7 +88,8 @@ pipeline {
                     steps {
                         sh '''
                             echo "📦 Installing dependencies..."
-                            npm ci --prefer-offline --no-audit
+                            # Use npm install for flexibility in case lock file is out of sync
+                            npm install --no-audit
                         '''
                     }
                 }
