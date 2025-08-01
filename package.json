@@ -61,9 +61,6 @@
     "undici": "^7.13.0",
     "whatwg-fetch": "^3.6.20"
   },
-  "overrides": {
-    "ci-info": "3.8.0"
-  },
   "eslintConfig": {
     "extends": "next",
     "rules": {
