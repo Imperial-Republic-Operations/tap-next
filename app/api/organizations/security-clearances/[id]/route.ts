@@ -3,7 +3,7 @@ import { getSession } from '@/lib/auth';
 import { updateSecurityClearanceTier } from '@/lib/_organizations';
 import { safeStringify } from '@/lib/api';
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { session } = await getSession();
         if (!session?.user) {
@@ -16,7 +16,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
             return NextResponse.json({ error: 'Tier is required' }, { status: 400 });
         }
 
-        const id = BigInt(params.id);
+        const { id: idString } = await params;
+        const id = BigInt(idString);
         const clearances = await updateSecurityClearanceTier(id, tier);
         return new NextResponse(safeStringify(clearances), {
             headers: { 'Content-Type': 'application/json' }
