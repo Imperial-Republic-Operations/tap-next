@@ -612,6 +612,8 @@ model Year {
   current  Boolean
 
   createdAt DateTime @default(now())
+
+  @@unique([gameYear, era])
 }
 
 enum Era {

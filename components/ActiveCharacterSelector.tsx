@@ -2,13 +2,18 @@
 
 import { useRouter } from "next/navigation";
 
-export default function ActiveCharacterSelector({characterId, children}: {characterId: bigint, children: React.ReactNode}) {
+export default function ActiveCharacterSelector({characterId, children, close}: {characterId: bigint, children: React.ReactNode, close?: () => void}) {
     const router = useRouter();
 
     const handleClick = () => {
         document.cookie = `activeCharacterId=${characterId}; path=/; SameSite=Lax`;
         window.dispatchEvent(new Event('activeCharacterChanged'));
         router.refresh();
+        
+        // Close the menu if close function is provided
+        if (close) {
+            close();
+        }
     }
 
     return (

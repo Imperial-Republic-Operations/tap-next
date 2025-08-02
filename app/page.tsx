@@ -23,6 +23,7 @@ interface DashboardStats {
 
 export default function Home() {
     const { data: session, status } = useSession();
+    const [activeCharacterId, setActiveCharacterId] = useState<string | null>(null);
     const [activeCharacter, setActiveCharacter] = useState<CharacterDetails | undefined>(undefined);
     const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
         totalCharacters: 0,
@@ -38,62 +39,100 @@ export default function Home() {
     });
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                if (session?.user) {
-                    // Fetch active character
-                    const activeCharacterId = Cookies.get("activeCharacterId");
-                    let character;
+    const syncActiveCharacterId = () => {
+        const id = Cookies.get('activeCharacterId');
+        setActiveCharacterId(id || null);
+    };
 
-                    if (activeCharacterId) {
-                        const response = await charactersApi.getCharacter(BigInt(activeCharacterId));
-                        character = response.data;
-                        setActiveCharacter(character);
-                    } else {
-                        // Fetch user settings to get default character
-                        const response = await axios.get(`/api/users/${session.user.id}/settings`);
-                        const userSettings = response.data;
-                        
-                        if (userSettings?.defaultCharacter) {
-                            character = userSettings.defaultCharacter;
-                            setActiveCharacter(character);
-                        }
-                    }
-                    
-                    // Fetch full dashboard stats for authenticated users
-                    const statsResponse = await dashboardApi.getStats(
-                        character?.id, 
-                        session.user.id
-                    );
-                    setDashboardStats(statsResponse.data);
-                } else {
-                    // Fetch public stats for non-authenticated users
-                    const publicStatsResponse = await dashboardApi.getPublicStats();
-                    const publicStats = publicStatsResponse.data;
-                    
-                    // Merge with default dashboard stats structure
-                    setDashboardStats({
-                        ...dashboardStats,
-                        totalCharacters: publicStats.totalCharacters,
-                        totalOrganizations: publicStats.totalOrganizations,
-                        totalDocuments: publicStats.totalDocuments,
-                        totalAwards: publicStats.totalAwards
-                    });
-                }
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                if (session?.user) {
-                    setActiveCharacter(undefined);
-                }
+    const fetchActiveCharacter = async (characterId: string) => {
+        try {
+            const response = await charactersApi.getCharacter(BigInt(characterId));
+            setActiveCharacter(response.data);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching active character:', error);
+            setActiveCharacter(undefined);
+            return undefined;
+        }
+    };
+
+    const fetchDefaultCharacter = async () => {
+        if (!session?.user) return undefined;
+        
+        try {
+            const response = await axios.get(`/api/users/${session.user.id}/settings`);
+            const userSettings = response.data;
+            
+            if (userSettings?.defaultCharacter) {
+                setActiveCharacter(userSettings.defaultCharacter);
+                return userSettings.defaultCharacter;
             }
+        } catch (error) {
+            console.error('Error fetching default character:', error);
+        }
+        return undefined;
+    };
+
+    const fetchDashboardStats = async (character?: CharacterDetails) => {
+        try {
+            if (session?.user) {
+                const statsResponse = await dashboardApi.getStats(
+                    character?.id, 
+                    session.user.id
+                );
+                setDashboardStats(statsResponse.data);
+            } else {
+                const publicStatsResponse = await dashboardApi.getPublicStats();
+                const publicStats = publicStatsResponse.data;
+                
+                setDashboardStats({
+                    ...dashboardStats,
+                    totalCharacters: publicStats.totalCharacters,
+                    totalOrganizations: publicStats.totalOrganizations,
+                    totalDocuments: publicStats.totalDocuments,
+                    totalAwards: publicStats.totalAwards
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching dashboard stats:', error);
+        }
+    };
+
+    // Listen for active character changes
+    useEffect(() => {
+        syncActiveCharacterId();
+
+        const handleActiveCharacterChange = () => {
+            syncActiveCharacterId();
+        };
+
+        window.addEventListener('activeCharacterChanged', handleActiveCharacterChange);
+
+        return () => {
+            window.removeEventListener('activeCharacterChanged', handleActiveCharacterChange);
+        };
+    }, []);
+
+    // Handle active character ID changes
+    useEffect(() => {
+        if (status === 'loading') return;
+
+        const loadData = async () => {
+            setLoading(true);
+            let character;
+
+            if (session?.user && activeCharacterId) {
+                character = await fetchActiveCharacter(activeCharacterId);
+            } else if (session?.user && !activeCharacterId) {
+                character = await fetchDefaultCharacter();
+            }
+
+            await fetchDashboardStats(character);
             setLoading(false);
         };
 
-        if (status !== 'loading') {
-            fetchData();
-        }
-    }, [session, status]);
+        loadData();
+    }, [activeCharacterId, session, status]);
 
     if (loading || status === 'loading') {
         return (

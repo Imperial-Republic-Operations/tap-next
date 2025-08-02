@@ -76,7 +76,25 @@ export default function YearList({ admin, moderator }: { admin: boolean, moderat
         try {
             const response = currentFilter === 'ALL' ? await calendarApi.getYears(pageNumber) : await calendarApi.getYears(pageNumber, currentFilter);
             const {years, totalPages} = response.data;
-            setYears(years);
+            
+            // Sort years: IRY in descending order, then UFY in ascending order
+            const sortedYears = years.sort((a, b) => {
+                if (a.era === 'IRY' && b.era === 'IRY') {
+                    return b.gameYear - a.gameYear; // IRY descending
+                }
+                if (a.era === 'UFY' && b.era === 'UFY') {
+                    return a.gameYear - b.gameYear; // UFY ascending
+                }
+                if (a.era === 'IRY' && b.era === 'UFY') {
+                    return -1; // IRY comes first
+                }
+                if (a.era === 'UFY' && b.era === 'IRY') {
+                    return 1; // IRY comes first
+                }
+                return 0;
+            });
+            
+            setYears(sortedYears);
             setTotalPages(totalPages);
         } catch (e) {
             setError('Failed to load years. Please try again.');
