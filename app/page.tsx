@@ -40,8 +40,8 @@ export default function Home() {
 
     useEffect(() => {
         const fetchData = async () => {
-            if (session?.user) {
-                try {
+            try {
+                if (session?.user) {
                     // Fetch active character
                     const activeCharacterId = Cookies.get("activeCharacterId");
                     let character;
@@ -61,14 +61,29 @@ export default function Home() {
                         }
                     }
                     
-                    // Fetch dashboard stats
+                    // Fetch full dashboard stats for authenticated users
                     const statsResponse = await dashboardApi.getStats(
                         character?.id, 
                         session.user.id
                     );
                     setDashboardStats(statsResponse.data);
-                } catch (error) {
-                    console.error('Error fetching data:', error);
+                } else {
+                    // Fetch public stats for non-authenticated users
+                    const publicStatsResponse = await dashboardApi.getPublicStats();
+                    const publicStats = publicStatsResponse.data;
+                    
+                    // Merge with default dashboard stats structure
+                    setDashboardStats({
+                        ...dashboardStats,
+                        totalCharacters: publicStats.totalCharacters,
+                        totalOrganizations: publicStats.totalOrganizations,
+                        totalDocuments: publicStats.totalDocuments,
+                        totalAwards: publicStats.totalAwards
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                if (session?.user) {
                     setActiveCharacter(undefined);
                 }
             }

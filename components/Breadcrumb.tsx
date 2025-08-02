@@ -125,7 +125,7 @@ export default function Breadcrumb({ staticDateInfo }: { staticDateInfo: StaticD
                 } else if (segment === "pending") {
                     pagesList.push({name: titleCase(`${t.breadcrumb.pending} ${segments[i - 1]}`), path})
                 } else {
-                    pagesList.push({ name: titleCase(segment.replace("-", " ")), path });
+                    pagesList.push({ name: titleCase(segment.replaceAll("-", " ")), path });
                 }
             }
 

@@ -234,6 +234,53 @@ export interface CharacterAward {
     awardId: bigint;
 }
 
+// Security Clearance Types
+export interface SecurityClearance {
+    id: bigint;
+    name: string;
+    tier: number;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface SecurityClearanceWithCharacters {
+    id: bigint;
+    name: string;
+    tier: number;
+    createdAt: Date;
+    updatedAt: Date;
+    characters: {
+        id: bigint;
+        name: string;
+    }[];
+}
+
+export interface CharacterWithClearance {
+    id: bigint;
+    name: string;
+    gender: 'MALE' | 'FEMALE';
+    status: 'ACTIVE' | 'INACTIVE' | 'DECEASED' | 'MISSING' | 'RETIRED';
+    currentSequence: number;
+    avatarLink?: string | null;
+    approvalStatus?: 'DRAFT' | 'PENDING' | 'DENIED' | 'APPROVED' | null;
+    nexusId?: bigint | null;
+    age?: number | null;
+    appearance?: string | null;
+    habits?: string | null;
+    strengths?: string | null;
+    weaknesses?: string | null;
+    hobbies?: string | null;
+    talents?: string | null;
+    background?: string | null;
+    speciesId: bigint;
+    homeworldId: bigint;
+    clearanceId?: bigint | null;
+    userId?: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    clearance?: SecurityClearance | null;
+}
+
 // Organization Types
 export interface OrganizationMember {
     id: bigint;

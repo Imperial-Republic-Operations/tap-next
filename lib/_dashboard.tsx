@@ -110,6 +110,9 @@ export async function getDashboardStats(
             }
         }
 
+        console.log('Total characters:', totalCharacters);
+        console.log('Total organizations:', totalOrganizations);
+
         return {
             totalCharacters,
             totalOrganizations,

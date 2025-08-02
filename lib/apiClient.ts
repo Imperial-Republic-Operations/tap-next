@@ -158,6 +158,19 @@ export const organizationsApi = {
     
     getSisterOrganizations: (parentOrgId: bigint, orgId: bigint) => 
         apiClient.get('/organizations/access', { params: { parentOrgId: parentOrgId.toString(), orgId: orgId.toString(), type: 'sister-organizations' } }),
+    
+    // Security Clearances
+    getSecurityClearances: () => 
+        apiClient.get('/organizations/security-clearances'),
+    
+    createSecurityClearance: (data: { name: string; tier: number }) => 
+        apiClient.post('/organizations/security-clearances', data),
+    
+    updateSecurityClearanceTier: (id: bigint, tier: number) => 
+        apiClient.patch(`/organizations/security-clearances/${id.toString()}`, { tier }),
+    
+    getCharactersWithClearances: () => 
+        apiClient.get('/organizations/characters-with-clearances'),
 };
 
 // Users API
@@ -211,6 +224,9 @@ export const dashboardApi = {
                 userId 
             } 
         }),
+    
+    getPublicStats: () => 
+        apiClient.get('/public/stats'),
 };
 
 export default apiClient;

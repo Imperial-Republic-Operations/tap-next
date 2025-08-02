@@ -83,21 +83,19 @@ export default function UsersHome() {
     const getRoleBadgeColor = (role: string) => {
         switch (role) {
             case 'SYSTEM_ADMIN':
-                return 'bg-red-100 text-red-800 ring-red-600/20';
-            case 'ADMIN':
                 return 'bg-purple-100 text-purple-800 ring-purple-600/20';
-            case 'ASSISTANT_ADMIN':
+            case 'ADMIN':
                 return 'bg-indigo-100 text-indigo-800 ring-indigo-600/20';
-            case 'GAME_MODERATOR':
+            case 'ASSISTANT_ADMIN':
                 return 'bg-blue-100 text-blue-800 ring-blue-600/20';
-            case 'STAFF':
+            case 'GAME_MODERATOR':
                 return 'bg-green-100 text-green-800 ring-green-600/20';
+            case 'STAFF':
+                return 'bg-yellow-100 text-yellow-800 ring-yellow-600/20';
             case 'PLAYER':
                 return 'bg-gray-100 text-gray-800 ring-gray-600/20';
             case 'BANNED':
                 return 'bg-red-100 text-red-800 ring-red-600/20';
-            default:
-                return 'bg-gray-100 text-gray-800 ring-gray-600/20';
         }
     };
 
@@ -119,13 +117,18 @@ export default function UsersHome() {
     }
 
     return (
-        <div className="px-4 sm:px-6 lg:px-8">
-            <div className="sm:flex sm:items-center">
-                <div className="sm:flex-auto">
-                    <h1 className="text-base font-semibold leading-6 text-gray-900 dark:text-white">User Management</h1>
-                    <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                        Manage user accounts and roles. Total: {totalCount} users
-                    </p>
+        <div className="mt-5 px-4 sm:px-6 lg:px-8">
+            <div className="border-b border-gray-200 dark:border-gray-800 pb-5">
+                <div className="sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <h2 className="text-2xl/7 font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <MagnifyingGlassIcon className="h-7 w-7 text-gray-400" />
+                            User Management
+                        </h2>
+                        <p className="mt-1 text-sm text-gray-500">
+                            Manage user accounts and roles. Total: {totalCount} users
+                        </p>
+                    </div>
                 </div>
             </div>
 

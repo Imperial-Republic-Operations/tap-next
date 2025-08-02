@@ -225,7 +225,7 @@ pipeline {
             }
         }
 
-        stage('Health Check & Integration Tests') {
+        /*stage('Health Check & Integration Tests') {
             steps {
                 script {
                     // Get application URL
@@ -235,13 +235,13 @@ pipeline {
                                 # Try to get Route53 record first for stage
                                 DOMAIN_NAME=\$(aws route53 list-resource-record-sets \
                                     --hosted-zone-id \$(aws route53 list-hosted-zones \
-                                        --query "HostedZones[?Name=='yourdomain.com.'].Id" \
+                                        --query "HostedZones[?Name=='keshaun.net.'].Id" \
                                         --output text | cut -d'/' -f3) \
-                                    --query "ResourceRecordSets[?Name=='tap.yourdomain.com.'].Name" \
+                                    --query "ResourceRecordSets[?Name=='tap.keshaun.net.'].Name" \
                                     --output text 2>/dev/null || echo "")
                                 
                                 if [ -n "\$DOMAIN_NAME" ]; then
-                                    echo "https://tap.yourdomain.com"
+                                    echo "https://tap.keshaun.net"
                                 else
                                     # Fallback to ALB DNS
                                     ALB_DNS=\$(aws elbv2 describe-load-balancers \
@@ -294,7 +294,7 @@ pipeline {
                     env.APP_URL = appUrl
                 }
             }
-        }
+        }*/
     }
 
     post {

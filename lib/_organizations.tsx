@@ -523,3 +523,145 @@ export async function getSubOrganizations(parentOrgId: bigint): Promise<bigint[]
 
     return allSubOrgs;
 }
+
+// Security Clearances
+export type SecurityClearanceWithCharacters = Prisma.SecurityClearanceGetPayload<{
+    include: {
+        characters: {
+            select: {
+                id: true,
+                name: true,
+            },
+        },
+    },
+}>;
+
+export type CharacterWithClearance = Prisma.CharacterGetPayload<{
+    include: {
+        clearance: true,
+    },
+}>;
+
+export async function fetchSecurityClearances(): Promise<SecurityClearanceWithCharacters[]> {
+    return prisma.securityClearance.findMany({
+        orderBy: {
+            tier: 'desc'
+        },
+        include: {
+            characters: {
+                select: {
+                    id: true,
+                    name: true
+                }
+            }
+        }
+    });
+}
+
+export async function fetchCharactersWithClearances(): Promise<CharacterWithClearance[]> {
+    return prisma.character.findMany({
+        where: {
+            clearanceId: {
+                not: null
+            }
+        },
+        orderBy: {
+            clearance: {
+                tier: 'desc'
+            }
+        },
+        include: {
+            clearance: true
+        }
+    });
+}
+
+export async function createSecurityClearance(name: string, tier: number): Promise<SecurityClearanceWithCharacters[]> {
+    await prisma.$transaction(async (tx) => {
+        // Shift existing clearances at this tier and above up by 1
+        await tx.securityClearance.updateMany({
+            where: {
+                tier: {
+                    gte: tier
+                }
+            },
+            data: {
+                tier: {
+                    increment: 1
+                }
+            }
+        });
+
+        // Create the new clearance
+        await tx.securityClearance.create({
+            data: {
+                name,
+                tier
+            }
+        });
+    });
+
+    return fetchSecurityClearances();
+}
+
+export async function updateSecurityClearanceTier(id: bigint, newTier: number): Promise<SecurityClearanceWithCharacters[]> {
+    const currentClearance = await prisma.securityClearance.findUnique({
+        where: { id }
+    });
+
+    if (!currentClearance) {
+        throw new Error('Security clearance not found');
+    }
+
+    const oldTier = currentClearance.tier;
+
+    await prisma.$transaction(async (tx) => {
+        if (newTier > oldTier) {
+            // Moving up in tier (higher number = higher clearance)
+            // Shift clearances between oldTier+1 and newTier down by 1
+            await tx.securityClearance.updateMany({
+                where: {
+                    tier: {
+                        gt: oldTier,
+                        lte: newTier
+                    },
+                    id: {
+                        not: id
+                    }
+                },
+                data: {
+                    tier: {
+                        decrement: 1
+                    }
+                }
+            });
+        } else if (newTier < oldTier) {
+            // Moving down in tier (lower number = lower clearance)
+            // Shift clearances between newTier and oldTier-1 up by 1
+            await tx.securityClearance.updateMany({
+                where: {
+                    tier: {
+                        gte: newTier,
+                        lt: oldTier
+                    },
+                    id: {
+                        not: id
+                    }
+                },
+                data: {
+                    tier: {
+                        increment: 1
+                    }
+                }
+            });
+        }
+
+        // Update the target clearance to the new tier
+        await tx.securityClearance.update({
+            where: { id },
+            data: { tier: newTier }
+        });
+    });
+
+    return fetchSecurityClearances();
+}
