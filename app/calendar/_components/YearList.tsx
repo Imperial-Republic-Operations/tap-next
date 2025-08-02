@@ -78,7 +78,7 @@ export default function YearList({ admin, moderator }: { admin: boolean, moderat
             const {years, totalPages} = response.data;
             
             // Sort years: IRY in descending order, then UFY in ascending order
-            const sortedYears = years.sort((a, b) => {
+            const sortedYears = years.sort((a: Year, b: Year) => {
                 if (a.era === 'IRY' && b.era === 'IRY') {
                     return b.gameYear - a.gameYear; // IRY descending
                 }
