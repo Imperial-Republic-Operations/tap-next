@@ -758,293 +758,277 @@ async function main() {
     console.log('🏛️ Seeding Organizations...');
     //region Organizations
     //region Factions
-    const imperialRepublic = await prisma.organization.create({
-        data: {
+    let imperialRepublic = await prisma.organization.findFirst({
+        where: {
             name: 'Imperial Republic',
-            abbreviation: 'IR',
-            type: OrganizationType.FACTION,
+            parentId: null,
         },
-    }).catch(async (e) => {
-        if (e.code === 'P2002') { // Unique constraint violation
-            return prisma.organization.findFirst({
-                where: {
-                    name: 'Imperial Republic',
-                    parentId: null,
-                },
-            });
-        }
-        throw e;
     });
+    if (!imperialRepublic) {
+        imperialRepublic = await prisma.organization.create({
+            data: {
+                name: 'Imperial Republic',
+                abbreviation: 'IR',
+                type: OrganizationType.FACTION,
+                parentId: null as any,
+            },
+        });
+    }
 
-    const hapesConsortium = await prisma.organization.create({
-        data: {
+    let hapesConsortium = await prisma.organization.findFirst({
+        where: {
             name: 'Hapes Consortium',
-            abbreviation: 'Hapes',
-            type: OrganizationType.FACTION,
+            parentId: null,
         },
-    }).catch(async (e) => {
-        if (e.code === 'P2002') { // Unique constraint violation
-            return prisma.organization.findFirst({
-                where: {
-                    name: 'Hapes Consortium',
-                    parentId: null,
-                },
-            });
-        }
-        throw e;
     });
+    if (!hapesConsortium) {
+        hapesConsortium = await prisma.organization.create({
+            data: {
+                name: 'Hapes Consortium',
+                abbreviation: 'Hapes',
+                type: OrganizationType.FACTION,
+                parentId: null as any,
+            },
+        });
+    }
 
-    const mandalore = await prisma.organization.create({
-        data: {
+    let mandalore = await prisma.organization.findFirst({
+        where: {
             name: 'Mandalore',
-            abbreviation: 'Mando',
-            type: OrganizationType.FACTION,
+            parentId: null,
         },
-    }).catch(async (e) => {
-        if (e.code === 'P2002') { // Unique constraint violation
-            return prisma.organization.findFirst({
-                where: {
-                    name: 'Mandalore',
-                    parentId: null,
-                },
-            });
-        }
-        throw e;
     });
+    if (!mandalore) {
+        mandalore = await prisma.organization.create({
+            data: {
+                name: 'Mandalore',
+                abbreviation: 'Mando',
+                type: OrganizationType.FACTION,
+                parentId: null as any,
+            },
+        });
+    }
 
-    const chissAscendancy = await prisma.organization.create({
-        data: {
+    let chissAscendancy = await prisma.organization.findFirst({
+        where: {
             name: 'Chiss Ascendancy',
-            abbreviation: 'CA',
-            type: OrganizationType.FACTION,
+            parentId: null,
         },
-    }).catch(async (e) => {
-        if (e.code === 'P2002') { // Unique constraint violation
-            return prisma.organization.findFirst({
-                where: {
-                    name: 'Chiss Ascendancy',
-                    parentId: null,
-                },
-            });
-        }
-        throw e;
     });
+    if (!chissAscendancy) {
+        chissAscendancy = await prisma.organization.create({
+            data: {
+                name: 'Chiss Ascendancy',
+                abbreviation: 'CA',
+                type: OrganizationType.FACTION,
+                parentId: null as any,
+            },
+        });
+    }
 
-    const tionHegemony = await prisma.organization.create({
-        data: {
+    let tionHegemony = await prisma.organization.findFirst({
+        where: {
             name: 'Tion Hegemony',
-            abbreviation: 'Tion',
-            type: OrganizationType.FACTION,
+            parentId: null,
         },
-    }).catch(async (e) => {
-        if (e.code === 'P2002') { // Unique constraint violation
-            return prisma.organization.findFirst({
-                where: {
-                    name: 'Tion Hegemony',
-                    parentId: null,
-                },
-            });
-        }
-        throw e;
     });
+    if (!tionHegemony) {
+        tionHegemony = await prisma.organization.create({
+            data: {
+                name: 'Tion Hegemony',
+                abbreviation: 'Tion',
+                type: OrganizationType.FACTION,
+                parentId: null as any,
+            },
+        });
+    }
 
-    const demaricCriminalConsortium = await prisma.organization.create({
-        data: {
+    let demaricCriminalConsortium = await prisma.organization.findFirst({
+        where: {
             name: 'Des`Maric Criminal Consortium',
-            abbreviation: 'DCC',
-            type: OrganizationType.FACTION,
+            parentId: null,
         },
-    }).catch(async (e) => {
-        if (e.code === 'P2002') { // Unique constraint violation
-            return prisma.organization.findFirst({
-                where: {
-                    name: 'Des`Maric Criminal Consortium',
-                    parentId: null,
-                },
-            });
-        }
-        throw e;
     });
+    if (!demaricCriminalConsortium) {
+        demaricCriminalConsortium = await prisma.organization.create({
+            data: {
+                name: 'Des`Maric Criminal Consortium',
+                abbreviation: 'DCC',
+                type: OrganizationType.FACTION,
+                parentId: null as any,
+            },
+        });
+    }
 
-    const sithEmpire = await prisma.organization.create({
-        data: {
+    let sithEmpire = await prisma.organization.findFirst({
+        where: {
             name: 'Sith Empire',
-            abbreviation: 'Sith',
-            type: OrganizationType.FACTION,
+            parentId: null,
         },
-    }).catch(async (e) => {
-        if (e.code === 'P2002') { // Unique constraint violation
-            return prisma.organization.findFirst({
-                where: {
-                    name: 'Sith Empire',
-                    parentId: null,
-                },
-            });
-        }
-        throw e;
     });
+    if (!sithEmpire) {
+        sithEmpire = await prisma.organization.create({
+            data: {
+                name: 'Sith Empire',
+                abbreviation: 'Sith',
+                type: OrganizationType.FACTION,
+                parentId: null as any,
+            },
+        });
+    }
 
-    const tradeFederation = await prisma.organization.create({
-        data: {
+    let tradeFederation = await prisma.organization.findFirst({
+        where: {
             name: 'Trade Federation',
-            abbreviation: 'TF',
-            type: OrganizationType.FACTION,
+            parentId: null,
         },
-    }).catch(async (e) => {
-        if (e.code === 'P2002') { // Unique constraint violation
-            return prisma.organization.findFirst({
-                where: {
-                    name: 'Trade Federation',
-                    parentId: null,
-                },
-            });
-        }
-        throw e;
     });
+    if (!tradeFederation) {
+        tradeFederation = await prisma.organization.create({
+            data: {
+                name: 'Trade Federation',
+                abbreviation: 'TF',
+                type: OrganizationType.FACTION,
+                parentId: null as any,
+            },
+        });
+    }
 
-    const blackSun = await prisma.organization.create({
-        data: {
+    let blackSun = await prisma.organization.findFirst({
+        where: {
             name: 'Black Sun',
-            abbreviation: 'BS',
-            type: OrganizationType.FACTION,
+            parentId: null,
         },
-    }).catch(async (e) => {
-        if (e.code === 'P2002') { // Unique constraint violation
-            return prisma.organization.findFirst({
-                where: {
-                    name: 'Black Sun',
-                    parentId: null,
-                },
-            });
-        }
-        throw e;
     });
+    if (!blackSun) {
+        blackSun = await prisma.organization.create({
+            data: {
+                name: 'Black Sun',
+                abbreviation: 'BS',
+                type: OrganizationType.FACTION,
+                parentId: null as any,
+            },
+        });
+    }
 
-    const corporateSectorAuthority = await prisma.organization.create({
-        data: {
+    let corporateSectorAuthority = await prisma.organization.findFirst({
+        where: {
             name: 'Corporate Sector Authority',
-            abbreviation: 'CSA',
-            type: OrganizationType.FACTION,
+            parentId: null,
         },
-    }).catch(async (e) => {
-        if (e.code === 'P2002') { // Unique constraint violation
-            return prisma.organization.findFirst({
-                where: {
-                    name: 'Corporate Sector Authority',
-                    parentId: null,
-                },
-            });
-        }
-        throw e;
     });
+    if (!corporateSectorAuthority) {
+        corporateSectorAuthority = await prisma.organization.create({
+            data: {
+                name: 'Corporate Sector Authority',
+                abbreviation: 'CSA',
+                type: OrganizationType.FACTION,
+                parentId: null as any,
+            },
+        });
+    }
 
-    const falleenFederation = await prisma.organization.create({
-        data: {
+    let falleenFederation = await prisma.organization.findFirst({
+        where: {
             name: 'Falleen Federation',
-            abbreviation: 'FF',
-            type: OrganizationType.FACTION,
+            parentId: null,
         },
-    }).catch(async (e) => {
-        if (e.code === 'P2002') { // Unique constraint violation
-            return prisma.organization.findFirst({
-                where: {
-                    name: 'Falleen Federation',
-                    parentId: null,
-                },
-            });
-        }
-        throw e;
     });
+    if (!falleenFederation) {
+        falleenFederation = await prisma.organization.create({
+            data: {
+                name: 'Falleen Federation',
+                abbreviation: 'FF',
+                type: OrganizationType.FACTION,
+                parentId: null as any,
+            },
+        });
+    }
 
-    const huttCartel = await prisma.organization.create({
-        data: {
+    let huttCartel = await prisma.organization.findFirst({
+        where: {
             name: 'Hutt Cartel',
-            abbreviation: 'Cartel',
-            type: OrganizationType.FACTION,
+            parentId: null,
         },
-    }).catch(async (e) => {
-        if (e.code === 'P2002') { // Unique constraint violation
-            return prisma.organization.findFirst({
-                where: {
-                    name: 'Hutt Cartel',
-                    parentId: null,
-                },
-            });
-        }
-        throw e;
     });
+    if (!huttCartel) {
+        huttCartel = await prisma.organization.create({
+            data: {
+                name: 'Hutt Cartel',
+                abbreviation: 'Cartel',
+                type: OrganizationType.FACTION,
+                parentId: null as any,
+            },
+        });
+    }
 
-    const praxeum = await prisma.organization.create({
-        data: {
+    let praxeum = await prisma.organization.findFirst({
+        where: {
             name: 'Praxeum',
-            abbreviation: 'Prax',
-            type: OrganizationType.FACTION,
+            parentId: null,
         },
-    }).catch(async (e) => {
-        if (e.code === 'P2002') { // Unique constraint violation
-            return prisma.organization.findFirst({
-                where: {
-                    name: 'Praxeum',
-                    parentId: null,
-                },
-            });
-        }
-        throw e;
     });
+    if (!praxeum) {
+        praxeum = await prisma.organization.create({
+            data: {
+                name: 'Praxeum',
+                abbreviation: 'Prax',
+                type: OrganizationType.FACTION,
+                parentId: null as any,
+            },
+        });
+    }
 
-    const imperialConfederacy = await prisma.organization.create({
-        data: {
+    let imperialConfederacy = await prisma.organization.findFirst({
+        where: {
             name: 'Imperial Confederacy',
-            abbreviation: 'IC',
-            type: OrganizationType.FACTION,
+            parentId: null,
         },
-    }).catch(async (e) => {
-        if (e.code === 'P2002') { // Unique constraint violation
-            return prisma.organization.findFirst({
-                where: {
-                    name: 'Imperial Confederacy',
-                    parentId: null,
-                },
-            });
-        }
-        throw e;
     });
+    if (!imperialConfederacy) {
+        imperialConfederacy = await prisma.organization.create({
+            data: {
+                name: 'Imperial Confederacy',
+                abbreviation: 'IC',
+                type: OrganizationType.FACTION,
+                parentId: null as any,
+            },
+        });
+    }
 
-    const crimsonDawn = await prisma.organization.create({
-        data: {
+    let crimsonDawn = await prisma.organization.findFirst({
+        where: {
             name: 'Crimson Dawn',
-            abbreviation: 'CD',
-            type: OrganizationType.FACTION,
+            parentId: null,
         },
-    }).catch(async (e) => {
-        if (e.code === 'P2002') { // Unique constraint violation
-            return prisma.organization.findFirst({
-                where: {
-                    name: 'Crimson Dawn',
-                    parentId: null,
-                },
-            });
-        }
-        throw e;
     });
+    if (!crimsonDawn) {
+        crimsonDawn = await prisma.organization.create({
+            data: {
+                name: 'Crimson Dawn',
+                abbreviation: 'CD',
+                type: OrganizationType.FACTION,
+                parentId: null as any,
+            },
+        });
+    }
 
-    const firstOrder = await prisma.organization.create({
-        data: {
+    let firstOrder = await prisma.organization.findFirst({
+        where: {
             name: 'First Order',
-            abbreviation: '1O',
-            type: OrganizationType.FACTION,
+            parentId: null,
         },
-    }).catch(async (e) => {
-        if (e.code === 'P2002') { // Unique constraint violation
-            return prisma.organization.findFirst({
-                where: {
-                    name: 'First Order',
-                    parentId: null,
-                },
-            });
-        }
-        throw e;
     });
+    if (!firstOrder) {
+        firstOrder = await prisma.organization.create({
+            data: {
+                name: 'First Order',
+                abbreviation: '1O',
+                type: OrganizationType.FACTION,
+                parentId: null as any,
+            },
+        });
+    }
     //endregion
 
     //region Branches
@@ -2755,7 +2739,7 @@ async function main() {
             tier: RankTier.HIGH_COMMAND,
             level: 6,
             salary: 0,
-            organizationId: irThrone.id,
+            organizationId: imperialRepublic.id,
         },
     });
     //endregion
@@ -3010,7 +2994,7 @@ async function main() {
         },
         update: {},
         create: {
-            name: 'High Minster',
+            name: 'High Minister',
             abbreviation: 'H.Min',
             tier: RankTier.HIGH_COMMAND,
             level: 2,
@@ -3066,7 +3050,7 @@ async function main() {
         },
         update: {},
         create: {
-            name: 'Minster',
+            name: 'Minister',
             abbreviation: 'Min',
             tier: RankTier.HIGH_COMMAND,
             level: 1,
@@ -3174,7 +3158,7 @@ async function main() {
         },
         update: {},
         create: {
-            name: 'Minster',
+            name: 'Minister',
             abbreviation: 'Min',
             tier: RankTier.HIGH_COMMAND,
             level: 1,
