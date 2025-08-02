@@ -221,6 +221,8 @@ pipeline {
                         
                         echo "✅ Deployment completed successfully!"
                     """
+
+                    env.APP_URL = "https://tap.keshaun.net"
                 }
             }
         }
