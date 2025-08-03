@@ -229,4 +229,60 @@ export const dashboardApi = {
         apiClient.get('/public/stats'),
 };
 
+// Map API
+export const mapApi = {
+    // Get complete galaxy map data
+    getGalaxyData: () => 
+        apiClient.get('/map/galaxy'),
+    
+    // Oversectors
+    getOversectors: () => 
+        apiClient.get('/map/oversectors'),
+    
+    getOversector: (id: bigint) => 
+        apiClient.get(`/map/oversectors/${id}`),
+    
+    createOversector: (data: { name: string; x?: number; y?: number; width?: number; height?: number; color?: string }) => 
+        apiClient.post('/map/oversectors', data),
+    
+    updateOversector: (id: bigint, data: { name?: string; x?: number; y?: number; width?: number; height?: number; color?: string }) => 
+        apiClient.put(`/map/oversectors/${id}`, data),
+    
+    // Sectors
+    getSectorsForOversector: (oversectorId: bigint) => 
+        apiClient.get('/map/sectors', { params: { oversectorId: oversectorId.toString() } }),
+    
+    getSector: (id: bigint) => 
+        apiClient.get(`/map/sectors/${id}`),
+    
+    createSector: (data: { name: string; oversectorId: bigint; x?: number; y?: number; width?: number; height?: number; color?: string }) => 
+        apiClient.post('/map/sectors', { ...data, oversectorId: data.oversectorId.toString() }),
+    
+    updateSector: (id: bigint, data: { name?: string; x?: number; y?: number; width?: number; height?: number; color?: string }) => 
+        apiClient.put(`/map/sectors/${id}`, data),
+    
+    // Systems
+    getSystemsForSector: (sectorId: bigint) => 
+        apiClient.get('/map/systems', { params: { sectorId: sectorId.toString() } }),
+    
+    getSystem: (id: bigint) => 
+        apiClient.get(`/map/systems/${id}`),
+    
+    createSystem: (data: { name: string; sectorId: bigint; x?: number; y?: number; width?: number; height?: number; color?: string }) => 
+        apiClient.post('/map/systems', { ...data, sectorId: data.sectorId.toString() }),
+    
+    updateSystem: (id: bigint, data: { name?: string; x?: number; y?: number; width?: number; height?: number; color?: string }) => 
+        apiClient.put(`/map/systems/${id}`, data),
+    
+    // Planets
+    getPlanetsForSystem: (systemId: bigint) => 
+        apiClient.get('/map/planets', { params: { systemId: systemId.toString() } }),
+    
+    createPlanet: (data: { name: string; systemId: bigint; x?: number; y?: number; radius?: number; color?: string; habitable?: boolean; forceProbabilityModifier?: number }) => 
+        apiClient.post('/map/planets', { ...data, systemId: data.systemId.toString() }),
+    
+    updatePlanet: (id: bigint, data: { name?: string; x?: number; y?: number; radius?: number; color?: string; habitable?: boolean; forceProbabilityModifier?: number }) => 
+        apiClient.put(`/map/planets/${id}`, data),
+};
+
 export default apiClient;

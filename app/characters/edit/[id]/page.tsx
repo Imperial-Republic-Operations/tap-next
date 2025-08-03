@@ -109,9 +109,16 @@ export default function EditCharacter({params}: {params: Promise<{id: string}>})
                 const speciesData = speciesRes.data;
                 const planetsData = planetsRes.data;
 
+                // Sort planets to ensure Deep Space appears first
+                const sortedPlanets = [...planetsData].sort((a: Planet, b: Planet) => {
+                    if (a.name === 'Deep Space') return -1;
+                    if (b.name === 'Deep Space') return 1;
+                    return a.name.localeCompare(b.name);
+                });
+
                 setCharacter(character);
                 setSpecies(speciesData);
-                setPlanets(planetsData);
+                setPlanets(sortedPlanets);
 
                 // Populate form with character data
                 setFormData({

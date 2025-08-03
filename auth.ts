@@ -47,7 +47,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     ...session.user,
                     id: user.id,
                     nexusId: user.nexusId?.toString(),
-                    role: user.role
+                    role: user.role,
+                    username: user.username
                 }
             };
         },

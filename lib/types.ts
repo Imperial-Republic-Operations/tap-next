@@ -145,6 +145,54 @@ export interface CharacterForceProfile {
     } | null;
 }
 
+export interface CharacterCreationResponse {
+    id: bigint;
+    name: string;
+    gender: 'MALE' | 'FEMALE';
+    status: 'ACTIVE' | 'INACTIVE' | 'DECEASED' | 'MISSING' | 'RETIRED';
+    currentSequence: number;
+    avatarLink?: string | null;
+    approvalStatus?: 'DRAFT' | 'PENDING' | 'DENIED' | 'APPROVED' | null;
+    nexusId?: bigint | null;
+    age?: number | null;
+    appearance?: string | null;
+    habits?: string | null;
+    strengths?: string | null;
+    weaknesses?: string | null;
+    hobbies?: string | null;
+    talents?: string | null;
+    background?: string | null;
+    speciesId: bigint;
+    homeworldId: bigint;
+    clearanceId?: bigint | null;
+    userId?: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    species: {
+        id: bigint;
+        name: string;
+        forceProbabilityModifier: number;
+        createdAt: Date;
+        updatedAt: Date;
+    };
+    homeworld: {
+        id: bigint;
+        name: string;
+        forceProbabilityModifier: number;
+        habitable: boolean;
+        systemId: bigint;
+        createdAt: Date;
+        updatedAt: Date;
+    };
+    user?: {
+        id: string;
+        name?: string | null;
+        username: string;
+    } | null;
+    isForceSensitive: boolean;
+    forceProfile?: CharacterForceProfile | null;
+}
+
 export interface ForceTitle {
     id: bigint;
     level: 'POTENTIAL' | 'INITIATE' | 'STUDENT' | 'KNIGHT' | 'MASTER' | 'GRANDMASTER';

@@ -316,15 +316,70 @@ export async function fetchPendingCharacters(page: number = 0) {
     };
 }
 
-export async function updateCharacterApprovalStatus(charId: bigint, status: 'APPROVED' | 'DENIED') {
-    return prisma.character.update({
-        where: { id: charId },
-        data: { approvalStatus: status },
-        select: {
-            id: true,
-            name: true,
-            approvalStatus: true
+export async function updateCharacterApprovalStatus(
+    charId: bigint, 
+    status: 'APPROVED' | 'DENIED',
+    approvingUserId?: string,
+    approvingUsername?: string,
+    approvingUserRole?: string
+) {
+    return prisma.$transaction(async (tx) => {
+        // Get the character with user info for notification
+        const characterWithUser = await tx.character.findUnique({
+            where: { id: charId },
+            select: {
+                id: true,
+                name: true,
+                userId: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            }
+        });
+
+        if (!characterWithUser) {
+            throw new Error('Character not found');
         }
+
+        // Update the character approval status
+        const character = await tx.character.update({
+            where: { id: charId },
+            data: { approvalStatus: status },
+            select: {
+                id: true,
+                name: true,
+                approvalStatus: true
+            }
+        });
+
+        // If approving and we have the approving user info, create a CodeGen
+        if (status === 'APPROVED' && approvingUserId && approvingUsername && approvingUserRole) {
+            const { createCharacterApprovalCode } = await import('@/lib/_code');
+            await createCharacterApprovalCode(
+                approvingUserId,
+                approvingUsername,
+                approvingUserRole,
+                charId
+            );
+        }
+
+        // Create notification for the character owner (if it's a personal character)
+        if (characterWithUser.userId) {
+            const { createNotification } = await import('@/lib/_notifications');
+            
+            const message = status === 'APPROVED' 
+                ? `Your character "${characterWithUser.name}" has been approved!`
+                : `Your character "${characterWithUser.name}" has been denied.`;
+            
+            const link = `/characters/${charId}`;
+            
+            await createNotification(characterWithUser.userId, message, link);
+        }
+
+        return character;
     });
 }
 

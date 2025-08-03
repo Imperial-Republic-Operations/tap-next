@@ -282,6 +282,9 @@ enum Permission {
   MANAGE_SECURITY
   MONITOR_ACTIVITY
   CREATE_REPORTS
+  MANAGE_SUBORGANIZATIONS
+  VIEW_AUDIT_LOGS
+  APPROVE_CLEARANCES
 }
 
 // Character
@@ -464,6 +467,18 @@ model Oversector {
   id   BigInt @id @default(autoincrement())
   name String @unique
 
+  // Position and boundaries for map visualization
+  x      Float @default(0)
+  y      Float @default(0)
+  width  Float @default(1000)
+  height Float @default(1000)
+
+  // Visual properties
+  color String? @db.VarChar(7) // Hex color code
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
   sectors Sector[]
 }
 
@@ -471,8 +486,20 @@ model Sector {
   id   BigInt @id @default(autoincrement())
   name String @unique
 
+  // Position relative to parent oversector boundaries
+  x      Float @default(0)
+  y      Float @default(0)
+  width  Float @default(200)
+  height Float @default(200)
+
+  // Visual properties
+  color String? @db.VarChar(7) // Hex color code
+
   oversectorId BigInt
   oversector   Oversector @relation(fields: [oversectorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   systems System[]
 }
@@ -481,8 +508,20 @@ model System {
   id   BigInt @id @default(autoincrement())
   name String @unique
 
+  // Position relative to parent sector boundaries
+  x      Float @default(0)
+  y      Float @default(0)
+  width  Float @default(50)
+  height Float @default(50)
+
+  // Visual properties
+  color String? @db.VarChar(7) // Hex color code
+
   sectorId BigInt
   sector   Sector @relation(fields: [sectorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   planets Planet[]
 }
@@ -492,6 +531,14 @@ model Planet {
   name                     String  @unique
   forceProbabilityModifier Float   @default(1.0)
   habitable                Boolean @default(true)
+
+  // Position relative to parent system boundaries
+  x      Float @default(0)
+  y      Float @default(0)
+  radius Float @default(5) // Planets are circular
+
+  // Visual properties
+  color String? @db.VarChar(7) // Hex color code
 
   systemId BigInt
   system   System @relation(fields: [systemId], references: [id])

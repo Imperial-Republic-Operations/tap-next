@@ -172,6 +172,26 @@ export default function CharacterTab({ userId, admin }: { userId: string, admin:
 
     return (
         <>
+            {/* Page Header */}
+            <div className="border-b border-gray-200 dark:border-gray-800 pb-5 mb-8">
+                <div className="sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <h1 className="text-2xl/7 font-bold text-gray-900 dark:text-white">Characters</h1>
+                        <p className="mt-1 text-sm text-gray-500">
+                            Manage character profiles and approval status
+                        </p>
+                    </div>
+                    <div className="mt-3 sm:mt-0">
+                        <button
+                            onClick={() => router.push('/characters/create')}
+                            className="inline-flex items-center rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+                        >
+                            Create Character
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             {admin && (
                 <div className="mb-7">
                     <div className="grid grid-cols-1 sm:hidden">

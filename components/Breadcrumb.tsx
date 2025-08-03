@@ -109,7 +109,7 @@ export default function Breadcrumb({ staticDateInfo }: { staticDateInfo: StaticD
                     const base = segments[i - 1] ? segments[i - 1].toLowerCase() : "";
                     const title = await getBreadcrumbTitle(base, BigInt(segment));
                     pagesList.push({name: title, path})
-                } else if (segment === "new") {
+                } else if (segment === "new" || segment === "create") {
                     let name = t.breadcrumb.creating;
                     switch (segments[i - 1]) {
                         case "characters":
