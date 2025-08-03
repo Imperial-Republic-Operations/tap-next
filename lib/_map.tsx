@@ -41,7 +41,7 @@ export type MapPlanet = Prisma.PlanetGetPayload<object>;
  * This returns the full galaxy map data for visualization
  */
 export async function fetchGalaxyMapData() {
-    return await prisma.oversector.findMany({
+    return prisma.oversector.findMany({
         include: {
             sectors: {
                 include: {
@@ -63,7 +63,7 @@ export async function fetchGalaxyMapData() {
  * Fetch all oversectors (top level only)
  */
 export async function fetchOversectors() {
-    return await prisma.oversector.findMany({
+    return prisma.oversector.findMany({
         orderBy: {
             name: 'asc'
         }
@@ -74,7 +74,7 @@ export async function fetchOversectors() {
  * Fetch a specific oversector with its sectors
  */
 export async function fetchOversectorWithSectors(oversectorId: bigint) {
-    return await prisma.oversector.findUnique({
+    return prisma.oversector.findUnique({
         where: { id: oversectorId },
         include: {
             sectors: {
@@ -90,7 +90,7 @@ export async function fetchOversectorWithSectors(oversectorId: bigint) {
  * Fetch sectors for a specific oversector
  */
 export async function fetchSectorsForOversector(oversectorId: bigint) {
-    return await prisma.sector.findMany({
+    return prisma.sector.findMany({
         where: {
             oversectorId: oversectorId
         },
@@ -111,7 +111,7 @@ export async function fetchSectorsForOversector(oversectorId: bigint) {
  * Fetch a specific sector with its systems
  */
 export async function fetchSectorWithSystems(sectorId: bigint) {
-    return await prisma.sector.findUnique({
+    return prisma.sector.findUnique({
         where: { id: sectorId },
         include: {
             systems: {
@@ -130,7 +130,7 @@ export async function fetchSectorWithSystems(sectorId: bigint) {
  * Fetch systems for a specific sector
  */
 export async function fetchSystemsForSector(sectorId: bigint) {
-    return await prisma.system.findMany({
+    return prisma.system.findMany({
         where: {
             sectorId: sectorId
         },
@@ -147,7 +147,7 @@ export async function fetchSystemsForSector(sectorId: bigint) {
  * Fetch a specific system with its planets
  */
 export async function fetchSystemWithPlanets(systemId: bigint) {
-    return await prisma.system.findUnique({
+    return prisma.system.findUnique({
         where: { id: systemId },
         include: {
             planets: {
@@ -163,7 +163,7 @@ export async function fetchSystemWithPlanets(systemId: bigint) {
  * Fetch planets for a specific system
  */
 export async function fetchPlanetsForSystem(systemId: bigint) {
-    return await prisma.planet.findMany({
+    return prisma.planet.findMany({
         where: {
             systemId: systemId
         },
@@ -184,7 +184,7 @@ export async function createOversector(data: {
     height?: number;
     color?: string;
 }) {
-    return await prisma.oversector.create({
+    return prisma.oversector.create({
         data: {
             name: data.name,
             x: data.x ?? 0,
@@ -208,7 +208,7 @@ export async function createSector(data: {
     height?: number;
     color?: string;
 }) {
-    return await prisma.sector.create({
+    return prisma.sector.create({
         data: {
             name: data.name,
             oversectorId: data.oversectorId,
@@ -233,7 +233,7 @@ export async function createSystem(data: {
     height?: number;
     color?: string;
 }) {
-    return await prisma.system.create({
+    return prisma.system.create({
         data: {
             name: data.name,
             sectorId: data.sectorId,
@@ -259,7 +259,7 @@ export async function createPlanet(data: {
     habitable?: boolean;
     forceProbabilityModifier?: number;
 }) {
-    return await prisma.planet.create({
+    return prisma.planet.create({
         data: {
             name: data.name,
             systemId: data.systemId,
@@ -284,7 +284,7 @@ export async function updateOversector(id: bigint, data: {
     height?: number;
     color?: string;
 }) {
-    return await prisma.oversector.update({
+    return prisma.oversector.update({
         where: { id },
         data
     });
@@ -301,7 +301,7 @@ export async function updateSector(id: bigint, data: {
     height?: number;
     color?: string;
 }) {
-    return await prisma.sector.update({
+    return prisma.sector.update({
         where: { id },
         data
     });
@@ -318,7 +318,7 @@ export async function updateSystem(id: bigint, data: {
     height?: number;
     color?: string;
 }) {
-    return await prisma.system.update({
+    return prisma.system.update({
         where: { id },
         data
     });
@@ -336,7 +336,7 @@ export async function updatePlanet(id: bigint, data: {
     habitable?: boolean;
     forceProbabilityModifier?: number;
 }) {
-    return await prisma.planet.update({
+    return prisma.planet.update({
         where: { id },
         data
     });
