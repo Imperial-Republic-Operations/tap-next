@@ -125,6 +125,11 @@ export default function Home() {
                 character = await fetchActiveCharacter(activeCharacterId);
             } else if (session?.user && !activeCharacterId) {
                 character = await fetchDefaultCharacter();
+            } else if (!session?.user) {
+                // User is not authenticated, clear any cached character data and cookies
+                setActiveCharacter(undefined);
+                setActiveCharacterId(null);
+                Cookies.remove('activeCharacterId');
             }
 
             await fetchDashboardStats(character);
@@ -134,7 +139,7 @@ export default function Home() {
         loadData();
     }, [activeCharacterId, session, status]);
 
-    if (loading || status === 'loading') {
+    if (status === 'loading' || (loading && session?.user)) {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>

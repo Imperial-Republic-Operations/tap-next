@@ -95,15 +95,17 @@ export default function Breadcrumb({ staticDateInfo }: { staticDateInfo: StaticD
                         path += `/${type}/${id}`;
 
                         const title = await getBreadcrumbTitleByType(base, type, id);
-                        pagesList.push({name: prefix ? `${prefix} ${title}` : title, path})
+                        pagesList.push({name: prefix ? `${prefix} ${title}` : title, path});
                         i += 2;
                     } else if (i + 1 < segments.length && isNumeric(segments[i + 1])) {
                         const id = BigInt(segments[i + 1]);
                         path += `/${id}`;
 
                         const title = await getBreadcrumbTitle(base, id);
-                        pagesList.push({name: prefix ? `${prefix} ${title}` : title, path})
+                        pagesList.push({name: prefix ? `${prefix} ${title}` : title, path});
                         i++;
+                    } else {
+                        if (base === 'map') pagesList.push({name: prefix ? `${prefix} Galaxy Map` : 'Galaxy Map', path});
                     }
                 } else if (isNumeric(segment)) {
                     const base = segments[i - 1] ? segments[i - 1].toLowerCase() : "";
@@ -121,9 +123,9 @@ export default function Breadcrumb({ staticDateInfo }: { staticDateInfo: StaticD
                         default:
                             name += "...";
                     }
-                    pagesList.push({name: titleCase(name), path})
+                    pagesList.push({name: titleCase(name), path});
                 } else if (segment === "pending") {
-                    pagesList.push({name: titleCase(`${t.breadcrumb.pending} ${segments[i - 1]}`), path})
+                    pagesList.push({name: titleCase(`${t.breadcrumb.pending} ${segments[i - 1]}`), path});
                 } else {
                     pagesList.push({ name: titleCase(segment.replaceAll("-", " ")), path });
                 }

@@ -17,6 +17,7 @@ import NavbarLink from "@/components/NavbarLink";
 import MobileNavbarLink from "@/components/MobileNavbarLink";
 import { fetchUnreadNotificationCount } from "@/lib/_notifications";
 import NotificationBell from "@/components/NotificationBell";
+import LogoutButton from "@/components/LogoutButton";
 import { getSession } from "@/lib/auth";
 import { getServerTranslations } from '@/lib/i18nServer';
 
@@ -28,6 +29,7 @@ function getNavigationConfig(t: any) {
             { title: t.header.organizations, route: "/organizations", exact: false, signInRequired: false, role: null, devOnly: false },
             { title: t.header.documents, route: "/documents", exact: false, signInRequired: false, role: null, devOnly: false },
             { title: t.header.inventory, route: "/inventory", exact: false, signInRequired: true, role: roles[1], devOnly: false },
+            { title: t.header.map, route: "/map", exact: false, signInRequired: true, role: roles[1], devOnly: false },
         ],
         dropdown: {
             title: t.header.more,
@@ -218,16 +220,19 @@ export default async function Header() {
                                     </MenuItem>
                                 ))}
                                 <MenuItem>
-                                    <form
-                                        action={async () => {
-                                            'use server'
-                                            if (status === 'authenticated') return await signOut({ redirectTo: '/' });
-                                            else return await signIn('nexus');
-                                        }}>
-                                        <button type="submit" className="cursor-pointer block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden w-full text-left">
-                                            {status === "authenticated" ? t.header.logout : t.header.login}
-                                        </button>
-                                    </form>
+                                    {status === "authenticated" ? (
+                                        <LogoutButton />
+                                    ) : (
+                                        <form
+                                            action={async () => {
+                                                'use server'
+                                                return await signIn('nexus');
+                                            }}>
+                                            <button type="submit" className="cursor-pointer block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden w-full text-left">
+                                                {t.header.login}
+                                            </button>
+                                        </form>
+                                    )}
                                 </MenuItem>
                             </MenuItems>
                         </Menu>

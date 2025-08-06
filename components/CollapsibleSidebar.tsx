@@ -21,7 +21,6 @@ export default function CollapsibleSidebar({navigation, session, status}: {navig
             try {
                 const response = await usersApi.getUser(session.user.id);
                 const user: UserWithTeamAndTeams | null = response.data;
-                console.log(user);
 
                 if (user?.team) {
                     const userTeams = [user.team];

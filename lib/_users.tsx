@@ -56,10 +56,43 @@ export async function fetchUserSettings(userId: string) {
         where: { userId },
         include: {
             defaultCharacter: {
-                select: {
-                    id: true,
-                    name: true,
-                }
+                include: {
+                    species: true,
+                    homeworld: true,
+                    clearance: true,
+                    interactions: true,
+                    previousPositions: true,
+                    educationHistory: true,
+                    honors: true,
+                    goals: true,
+                    awards: true,
+                    peerage: {
+                        include: {
+                            domain: true,
+                        }
+                    },
+                    forceProfile: {
+                        include: {
+                            master: true,
+                            order: {
+                                include: {
+                                    titles: true,
+                                }
+                            },
+                        }
+                    },
+                    memberships: {
+                        include: {
+                            organization: true,
+                            rank: true,
+                            position: {
+                                include: {
+                                    permissions: true,
+                                },
+                            },
+                        },
+                    },
+                },
             }
         }
     });

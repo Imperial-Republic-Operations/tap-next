@@ -88,6 +88,7 @@ export interface Translations {
         organizations: string;
         documents: string;
         inventory: string;
+        map: string;
     };
     breadcrumb: {
         editing: string;
@@ -254,6 +255,7 @@ const translations: Record<SupportedLanguage, Translations> = {
             organizations: 'Organizations',
             documents: 'Documents',
             inventory: 'Inventory',
+            map: 'Galaxy Map',
         },
         breadcrumb: {
             editing: 'Editing:',
@@ -397,6 +399,7 @@ const translations: Record<SupportedLanguage, Translations> = {
             organizations: 'Organizaciones',
             documents: 'Documentos',
             inventory: 'Inventario',
+            map: 'Mapa de la Galaxia',
         },
         breadcrumb: {
             editing: 'Editando:',
@@ -540,6 +543,7 @@ const translations: Record<SupportedLanguage, Translations> = {
             organizations: 'Organisations',
             documents: 'Documents',
             inventory: 'Inventaire',
+            map: 'Carte de la Galaxie',
         },
         breadcrumb: {
             editing: 'Modification:',
@@ -683,6 +687,7 @@ const translations: Record<SupportedLanguage, Translations> = {
             organizations: 'Organisationen',
             documents: 'Dokumente',
             inventory: 'Inventar',
+            map: 'Galaxienkarte',
         },
         breadcrumb: {
             editing: 'Bearbeitung:',

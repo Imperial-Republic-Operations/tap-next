@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Session } from "next-auth";
 import { CharacterDetails } from "@/lib/types";
 import {
@@ -40,24 +42,42 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({session, status, activeCharacter, dashboardStats, statsLoading}: HomeClientProps) {
+    const router = useRouter();
+    const [isAuthenticated, setIsAuthenticated] = useState(!!session?.user);
+    
+    useEffect(() => {
+        console.log('Status', status);
+        console.log('Session', session);
+        // Check if we just logged out (no session but we're not in loading state)
+        if (!session?.user || status === 'unauthenticated') {
+            setIsAuthenticated(false);
+            // Force router refresh to ensure clean state
+            router.refresh();
+        } else {
+            setIsAuthenticated(!!session?.user);
+        }
+    }, [session, status, router]);
+    
     const primaryMembership = activeCharacter?.memberships.find(
         (member) => member.primaryMembership
     );
 
     const LandingPage = () => (
-        <div className="min-h-screen bg-gradiant-to-br from-slate-900 via-blue-900 to-purple-900">
+        // <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900">
+        <div className="min-h-screen">
             <div className="relative">
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
                     <div className="text-center">
                         <div className="flex justify-center items-center mb-8">
-                            <div className="w-20 h-20 bg-gradiant-to-r from-blue-400 to-purple-500 rounded-xl flex items-center justify-center shadow-2xl">
+                            {/*<div className="w-20 h-20 bg-gradient-to-r from-blue-400 to-purple-500 rounded-xl flex items-center justify-center shadow-2xl">*/}
+                            <div className="w-20 h-20 rounded-xl flex items-center justify-center shadow-2xl">
                                 <Star className="w-12 h-12 text-white" />
                             </div>
                         </div>
 
                         <h1 className="text-6xl md:text-7xl font-bold text-white mb-6 leading-tight tracking-tight">
                             Terminal Access
-                            <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                            <span className="block bg-gradient-to-r from-blue-400 via-primary-400 to-pink-400 bg-clip-text text-transparent">
                                 Project
                             </span>
                         </h1>
@@ -144,8 +164,8 @@ export default function HomeClient({session, status, activeCharacter, dashboardS
                             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
                             <div className="relative bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/20 transition-all duration-300 h-full">
                                 <div className="flex items-center justify-between mb-4">
-                                    <feature.icon className="w-12 h-12 text-blue-400 group-hover:text-purple-400 transition-colors duration-300" />
-                                    <span className="text-xs font-medium text-purple-400 bg-purple-400/20 px-2 py-1 rounded-full">
+                                    <feature.icon className="w-12 h-12 text-blue-400 group-hover:text-primary-400 transition-colors duration-300" />
+                                    <span className="text-xs font-medium text-primary-400 bg-primary-400/20 px-2 py-1 rounded-full">
                                         {feature.highlight}
                                     </span>
                                 </div>
@@ -204,7 +224,7 @@ export default function HomeClient({session, status, activeCharacter, dashboardS
                 <div className="grid lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-6">
                         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                            <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+                            <div className="bg-gradient-to-r from-purple-600 to-primary-600 px-6 py-4">
                                 <div className="flex items-center space-x-4">
                                     <div className="w-16 h-15 bg-white/20 rounded-full flex items-center justify-center">
                                         {activeCharacter?.avatarLink ? (
@@ -424,7 +444,7 @@ export default function HomeClient({session, status, activeCharacter, dashboardS
 
     return (
         <div className="w-full">
-            {status === 'authenticated' ? <Dashboard /> : <LandingPage />}
+            {isAuthenticated ? <Dashboard /> : <LandingPage />}
         </div>
     );
 }
