@@ -37,6 +37,7 @@ model User {
   characters    Character[]
   approvalCodes CodeGen[]
   documents     GameDocument[]
+  senator       Senator?
   notifications Notification[]
 }
 
@@ -195,8 +196,15 @@ model Position {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  members     Member[]
-  permissions PositionPermission[]
+  members                    Member[]
+  permissions                PositionPermission[]
+  senateSupremeRulerSetting  SenateSettings?      @relation("supremeRulerPosition")
+  senatePresidentSetting     SenateSettings?      @relation("presidentPosition")
+  senateVicePresidentSetting SenateSettings?      @relation("vicePresidentPosition")
+  hcChairmanSetting          HighCouncilSettings? @relation("chairmanPosition")
+  hcViceChairmanSetting      HighCouncilSettings? @relation("viceChairmanPosition")
+  hcCouncilorSetting         HighCouncilSettings? @relation("highCouncilorPosition")
+  hcHonoraryCouncilorSetting HighCouncilSettings? @relation("honoraryHighCouncilorPosition")
 
   @@unique([name, organizationId])
 }
@@ -549,6 +557,7 @@ model Planet {
 
   characters Character[]
   peerage    Peerage?
+  senators   Senator[]
 }
 
 // Force
@@ -1061,6 +1070,47 @@ enum AwardStatus {
   AWARDED
 }
 
+// Politics
+model Senator {
+  id       BigInt   @id @default(autoincrement())
+  name     String
+  seatType SeatType @default(NONE)
+
+  planetId BigInt
+  planet   Planet @relation(fields: [planetId], references: [id])
+
+  committeeId BigInt?
+  committee   SenateCommittee? @relation("committeeMembership", fields: [committeeId], references: [id])
+
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id])
+
+  chairCommittee SenateCommittee? @relation("committeeChair")
+
+  viceChairCommittee SenateCommittee? @relation("viceCommitteeChair")
+}
+
+model SenateCommittee {
+  id        BigInt  @id @default(autoincrement())
+  name      String
+  color     String? @db.VarChar(7)
+  temporary Boolean @default(false)
+
+  chairId BigInt?  @unique
+  chair   Senator? @relation("committeeChair", fields: [chairId], references: [id])
+
+  viceChairId BigInt?  @unique
+  viceChair   Senator? @relation("viceCommitteeChair", fields: [viceChairId], references: [id])
+
+  senators Senator[] @relation("committeeMembership")
+}
+
+enum SeatType {
+  NONE
+  ELECTED
+  APPOINTED
+}
+
 // Notifications and Communication
 model Notification {
   id        BigInt   @id @default(autoincrement())
@@ -1073,4 +1123,34 @@ model Notification {
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
+}
+
+// System Settings
+model SenateSettings {
+  id Int @id @default(1)
+
+  supremeRulerPositionId BigInt   @unique
+  supremeRulerPosition   Position @relation("supremeRulerPosition", fields: [supremeRulerPositionId], references: [id])
+
+  presidentPositionId BigInt   @unique
+  presidentPosition   Position @relation("presidentPosition", fields: [presidentPositionId], references: [id])
+
+  vicePresidentPositionId BigInt   @unique
+  vicePresidentPosition   Position @relation("vicePresidentPosition", fields: [vicePresidentPositionId], references: [id])
+}
+
+model HighCouncilSettings {
+  id Int @id @default(1)
+
+  chairmanPositionId BigInt   @unique
+  chairmanPosition   Position @relation("chairmanPosition", fields: [chairmanPositionId], references: [id])
+
+  viceChairmanPositionId BigInt   @unique
+  viceChairmanPosition   Position @relation("viceChairmanPosition", fields: [viceChairmanPositionId], references: [id])
+
+  highCouncilorPositionId BigInt   @unique
+  highCouncilorPosition   Position @relation("highCouncilorPosition", fields: [highCouncilorPositionId], references: [id])
+
+  honoraryHighCouncilorPositionId BigInt   @unique
+  honoraryHighCouncilorPosition   Position @relation("honoraryHighCouncilorPosition", fields: [honoraryHighCouncilorPositionId], references: [id])
 }

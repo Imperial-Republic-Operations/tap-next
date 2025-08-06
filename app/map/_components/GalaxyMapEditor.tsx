@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { mapApi } from "@/lib/apiClient";
 import { useSession } from "next-auth/react";
 import { roles, userHasAccess } from "@/lib/roles";
-import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { PlusIcon } from "@heroicons/react/24/outline";
 
 interface EntityFormData {
     name: string;
@@ -267,15 +267,15 @@ export default function GalaxyMapEditor() {
                         await mapApi.createOversector(formData);
                         break;
                     case 'sector':
-                        if (!parentId) throw new Error('Parent oversector is required');
+                        if (!parentId) new Error('Parent oversector is required');
                         await mapApi.createSector({ ...formData, oversectorId: BigInt(parentId) });
                         break;
                     case 'system':
-                        if (!parentId) throw new Error('Parent sector is required');
+                        if (!parentId) new Error('Parent sector is required');
                         await mapApi.createSystem({ ...formData, sectorId: BigInt(parentId) });
                         break;
                     case 'planet':
-                        if (!parentId) throw new Error('Parent system is required');
+                        if (!parentId) new Error('Parent system is required');
                         await mapApi.createPlanet({ ...formData, systemId: BigInt(parentId) });
                         break;
                 }
@@ -696,9 +696,9 @@ export default function GalaxyMapEditor() {
                     <div className="text-sm text-primary-700 dark:text-primary-400">
                         <strong>To add nested entities:</strong>
                         <ul className="list-disc list-inside mt-1 space-y-1 ml-2">
-                            <li><strong>Sector:</strong> Select entity type "Sector" → Choose parent oversector</li>
-                            <li><strong>System:</strong> Select "System" → Choose oversector → Choose sector from that oversector</li>
-                            <li><strong>Planet:</strong> Select "Planet" → Choose oversector → Choose sector → Choose system</li>
+                            <li><strong>Sector:</strong> Select entity type &quot;Sector&quot; → Choose parent oversector</li>
+                            <li><strong>System:</strong> Select &quot;System&quot; → Choose oversector → Choose sector from that oversector</li>
+                            <li><strong>Planet:</strong> Select &quot;Planet&quot; → Choose oversector → Choose sector → Choose system</li>
                         </ul>
                     </div>
                     <div className="text-sm text-primary-700 dark:text-primary-400">
