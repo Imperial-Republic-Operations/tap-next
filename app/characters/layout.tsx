@@ -12,7 +12,7 @@ export default function CharacterLayout({
                                    }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const { data: session, status } = useSession();
+    const { data: session } = useSession();
     const [pendingCount, setPendingCount] = useState<number>(0);
 
     useEffect(() => {
@@ -35,7 +35,7 @@ export default function CharacterLayout({
 
     return(
         <div className="flex">
-            <CollapsibleSidebar navigation={navigationLinks} session={session} status={status} />
+            <CollapsibleSidebar navigation={navigationLinks} session={session} />
             <div className="sidebar-content flex-1 self-start overflow-y-auto mt-5 pl-75 pr-5">
                 {children}
             </div>

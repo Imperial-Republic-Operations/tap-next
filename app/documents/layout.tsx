@@ -12,12 +12,12 @@ export default async function DocumentLayout({
                                    }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const {session, status} = await getSession();
+    const {session} = await getSession();
 
     return(
         <div className="flex">
             {/*<Sidebar navigation={navigationLinks} />*/}
-            <CollapsibleSidebar navigation={navigationLinks} session={session} status={status} />
+            <CollapsibleSidebar navigation={navigationLinks} session={session} />
             <div className="sidebar-content flex-1 self-start overflow-y-auto mt-5 pl-75 pr-5">
                 {children}
             </div>

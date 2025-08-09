@@ -19,6 +19,7 @@ import {
     Zap
 } from "lucide-react";
 import { roles, userHasAccess } from "@/lib/roles";
+import Link from "next/link";
 
 interface DashboardStats {
     totalCharacters: number;
@@ -88,10 +89,10 @@ export default function HomeClient({session, status, activeCharacter, dashboardS
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                            <a href="/api/auth/signin" className="group relative px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                            <Link href="/api/auth/signin" className="group relative px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                                 <span className="relative z-10">Access via Nexus</span>
                                 <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity duration-300"></div>
-                            </a>
+                            </Link>
 
                             <button className="px-8 py-4 border-2 border-white/20 hover:border-white/40 text-white rounded-xl font-semibold text-lg transition-all duration-300 backdrop-blur-sm hover:bg-white/10">
                                 Learn More
