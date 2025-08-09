@@ -8,9 +8,9 @@ import {
     MenuItems
 } from "@headlessui/react";
 import { Bars3Icon, ChevronDownIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { roles, userHasAccess } from "@/lib/roles";
+import { roles } from "@/lib/roles";
 import { cookies } from "next/headers";
-import { signIn, signOut } from "@/auth";
+import { signIn } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import CharacterMenu from "@/components/CharacterMenu";
 import NavbarLink from "@/components/NavbarLink";
@@ -20,28 +20,64 @@ import NotificationBell from "@/components/NotificationBell";
 import LogoutButton from "@/components/LogoutButton";
 import { getSession } from "@/lib/auth";
 import { getServerTranslations } from '@/lib/i18nServer';
+import { NavigationAccess, userHasNavigationAccess } from "@/lib/navigation";
 
-function getNavigationConfig(t: any) {
+type NavigationConfig = {
+    main: {
+            title: string;
+            route: string;
+            exact: boolean;
+            access: NavigationAccess
+            devOnly: boolean;
+        }[];
+    dropdown: {
+        title: string;
+        sections: {
+            label: string;
+            items: {
+                title: string;
+                route: string;
+                exact: boolean;
+                access: NavigationAccess;
+                devOnly: boolean;
+            }[]
+        }[];
+    };
+}
+
+function getNavigationConfig(t: any): NavigationConfig {
     return {
         main: [
-            { title: t.header.home, route: "/", exact: true, signInRequired: false, role: null, devOnly: false },
-            { title: t.header.characters, route: "/characters", exact: false, signInRequired: true, role: roles[1], devOnly: false },
-            { title: t.header.organizations, route: "/organizations", exact: false, signInRequired: false, role: null, devOnly: false },
-            { title: t.header.documents, route: "/documents", exact: false, signInRequired: false, role: null, devOnly: false },
-            { title: t.header.inventory, route: "/inventory", exact: false, signInRequired: true, role: roles[1], devOnly: false },
-            { title: t.header.map, route: "/map", exact: false, signInRequired: true, role: roles[1], devOnly: false },
+            { title: t.header.home, route: "/", exact: true, access: { type: 'open' }, devOnly: false },
+            { title: t.header.characters, route: "/characters", exact: false, access: { type: 'role', role: roles[1] }, devOnly: false },
+            { title: t.header.organizations, route: "/organizations", exact: false, access: { type: 'open' }, devOnly: false },
+            { title: t.header.documents, route: "/documents", exact: false, access: { type: 'open' }, devOnly: false },
+            { title: t.header.inventory, route: "/inventory", exact: false, access: { type: 'role', role: roles[1] }, devOnly: false },
+            { title: t.header.map, route: "/map", exact: false, access: { type: 'role', role: roles[1] }, devOnly: false },
+            { title: t.header.map, route: "/politics", exact: false, access: { type: 'role', role: roles[1] }, devOnly: false },
+            // TODO: Add a way to add additional criterion for a link to appear in the header (ex: having an aware force-sensitive character (or the active character being aware of being force-sensitive?))
+            // { title: t.header.map, route: "/force", exact: false, access: { type: 'role', role: roles[1] }, devOnly: false },
         ],
         dropdown: {
             title: t.header.more,
             sections: [
                 {
+                    label: 'Section Name Pending',
+                    items: [
+                        { title: t.header.rules, route: "/rules", exact: false, access: { type: 'open' }, devOnly: false },
+                        { title: t.header.staff, route: "/staff", exact: false, access: { type: 'open' }, devOnly: false },
+                        { title: t.header.patchNotes, route: "/patch-notes", exact: false, access: { type: 'open' }, devOnly: false },
+                    ]
+                },
+                {
                     label: t.header.administration,
                     items: [
-                        { title: t.header.userAdministration, route: "/users", exact: false, signInRequired: true, role: roles[4], devOnly: false },
-                        { title: t.header.calendarSettings, route: "/calendar", exact: false, signInRequired: true, role: roles[3], devOnly: false },
-                        { title: t.header.notificationsTest, route: "/notifications/test", exact: false, signInRequired: true, role: roles[6], devOnly: true },
+                        { title: t.header.userAdministration, route: "/users", exact: false, access: { type: 'role', role: roles[4] }, devOnly: false },
+                        { title: t.header.calendarSettings, route: "/calendar", exact: false, access: { type: 'role', role: roles[3] }, devOnly: false },
+                        { title: t.header.calendarSettings, route: "/system", exact: false, access: { type: 'role', role: roles[6] }, devOnly: false },
+                        { title: t.header.notificationsTest, route: "/notifications/test", exact: false, access: { type: 'role', role: roles[6] }, devOnly: true },
                     ]
-                }
+                },
             ],
         }
     };
@@ -107,7 +143,7 @@ export default async function Header() {
     const visibleDropdownSections = navigationConfig.dropdown.sections
         .map(section => ({
             ...section,
-            items: section.items.filter(item => (!item.signInRequired || (item.signInRequired && status === "authenticated" && userHasAccess(item.role, session?.user))) && ((item.devOnly && process.env.NODE_ENV !== "production") || !item.devOnly))
+            items: section.items.filter(async item => await userHasNavigationAccess(item.access, session?.user) && ((item.devOnly && process.env.ENVIRONMENT !== "production") || !item.devOnly))
         }))
         .filter(section => section.items.length > 0);
 
@@ -136,7 +172,7 @@ export default async function Header() {
                         <div className="hidden sm:ml-6 sm:block">
                             <div className="flex space-x-4">
                                 {navigationConfig.main
-                                    .filter((item) => (!item.signInRequired || (item.signInRequired && status === "authenticated" && userHasAccess(item.role, session?.user))) && ((item.devOnly && process.env.NODE_ENV !== "production") || !item.devOnly))
+                                    .filter(async (item) => await userHasNavigationAccess(item.access, session?.user) && ((item.devOnly && process.env.NODE_ENV !== "production") || !item.devOnly))
                                     .map((item) => (
                                         <NavbarLink key={item.title} href={item.route} exact={item.exact}>
                                             {item.title}
@@ -243,7 +279,7 @@ export default async function Header() {
             <DisclosurePanel className="sm:hidden">
                 <div className="space-y-1 px-2 pt-2 pb-3">
                     {allNavigationItems
-                        .filter((item) => (!item.signInRequired || (item.signInRequired && status === "authenticated" && userHasAccess(item.role, session?.user))) && ((item.devOnly && process.env.NODE_ENV !== "production") || !item.devOnly))
+                        .filter(async (item) => await userHasNavigationAccess(item.access, session?.user) && ((item.devOnly && process.env.NODE_ENV !== "production") || !item.devOnly))
                         .map((item) => (
                             <MobileNavbarLink key={item.title} href={item.route} exact={item.exact}>
                                 {item.title}

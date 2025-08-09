@@ -89,6 +89,9 @@ export interface Translations {
         documents: string;
         inventory: string;
         map: string;
+        rules: string;
+        staff: string;
+        patchNotes: string;
     };
     breadcrumb: {
         editing: string;
@@ -256,6 +259,9 @@ const translations: Record<SupportedLanguage, Translations> = {
             documents: 'Documents',
             inventory: 'Inventory',
             map: 'Galaxy Map',
+            rules: 'Rules',
+            staff: 'Staff',
+            patchNotes: 'Patch Notes',
         },
         breadcrumb: {
             editing: 'Editing:',
@@ -400,6 +406,9 @@ const translations: Record<SupportedLanguage, Translations> = {
             documents: 'Documentos',
             inventory: 'Inventario',
             map: 'Mapa de la Galaxia',
+            rules: 'Normas',
+            staff: 'El Personal',
+            patchNotes: 'Notas del parches',
         },
         breadcrumb: {
             editing: 'Editando:',
@@ -544,6 +553,9 @@ const translations: Record<SupportedLanguage, Translations> = {
             documents: 'Documents',
             inventory: 'Inventaire',
             map: 'Carte de la Galaxie',
+            rules: 'Règle',
+            staff: 'Le Personnelle',
+            patchNotes: 'Notes de mise à jour',
         },
         breadcrumb: {
             editing: 'Modification:',
@@ -688,6 +700,9 @@ const translations: Record<SupportedLanguage, Translations> = {
             documents: 'Dokumente',
             inventory: 'Inventar',
             map: 'Galaxienkarte',
+            rules: 'Regel',
+            staff: 'Mitarbeiterin',
+            patchNotes: 'Patchnotizen',
         },
         breadcrumb: {
             editing: 'Bearbeitung:',

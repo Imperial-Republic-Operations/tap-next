@@ -1,7 +1,7 @@
 import { userHasAccess } from "@/lib/roles";
 import { prisma } from "@/lib/prisma";
 
-type NavigationAccess = { type: 'open' }
+export type NavigationAccess = { type: 'open' }
     | { type: 'authenticated' }
     | { type: 'role', role: string }
     | { type: 'team', team: 'character' | 'moderation' | 'force'| 'operations'| 'publication', overrideRole?: string }
