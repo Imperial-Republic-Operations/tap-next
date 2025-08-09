@@ -203,6 +203,101 @@ export const usersApi = {
         apiClient.get(`/users/${id}/characters`),
 };
 
+// Politics API
+export const politicsApi = {
+    // Hub data (public)
+    getPoliticsHub: () => 
+        apiClient.get('/politics'),
+    
+    // Senators
+    getSenators: () => 
+        apiClient.get('/politics/senators'),
+    
+    getSenator: (id: bigint) => 
+        apiClient.get(`/politics/senators/${id.toString()}`),
+    
+    createSenator: (data: {
+        name: string;
+        seatType: 'NONE' | 'ELECTED' | 'APPOINTED';
+        planetId: string;
+        userId?: string;
+        committeeId?: string;
+    }) => apiClient.post('/politics/senators', data),
+    
+    updateSenator: (id: bigint, data: {
+        name?: string;
+        seatType?: 'NONE' | 'ELECTED' | 'APPOINTED';
+        planetId?: string;
+        userId?: string;
+        committeeId?: string;
+    }) => apiClient.put(`/politics/senators/${id.toString()}`, data),
+    
+    deleteSenator: (id: bigint) => 
+        apiClient.delete(`/politics/senators/${id.toString()}`),
+    
+    // Senate Committees
+    getCommittees: () => 
+        apiClient.get('/politics/committees'),
+    
+    getCommittee: (id: bigint) => 
+        apiClient.get(`/politics/committees/${id.toString()}`),
+    
+    createCommittee: (data: {
+        name: string;
+        color?: string;
+        temporary?: boolean;
+        chairId?: string;
+        viceChairId?: string;
+    }) => apiClient.post('/politics/committees', data),
+    
+    updateCommittee: (id: bigint, data: {
+        name?: string;
+        color?: string;
+        temporary?: boolean;
+        chairId?: string;
+        viceChairId?: string;
+    }) => apiClient.put(`/politics/committees/${id.toString()}`, data),
+    
+    deleteCommittee: (id: bigint) => 
+        apiClient.delete(`/politics/committees/${id.toString()}`),
+};
+
+// System Settings API
+export const systemApi = {
+    // Senate Settings
+    getSenateSettings: () => 
+        apiClient.get('/system/senate'),
+    
+    updateSenateSettings: (data: {
+        supremeRulerPositionId?: string;
+        presidentPositionId?: string;
+        vicePresidentPositionId?: string;
+    }) => apiClient.put('/system/senate', data),
+    
+    // High Council Settings
+    getHighCouncilSettings: () => 
+        apiClient.get('/system/high-council'),
+    
+    updateHighCouncilSettings: (data: {
+        chairmanPositionId?: string;
+        viceChairmanPositionId?: string;
+        highCouncilorPositionId?: string;
+        honoraryHighCouncilorPositionId?: string;
+    }) => apiClient.put('/system/high-council', data),
+    
+    // Teams Settings
+    getTeamsSettings: () => 
+        apiClient.get('/system/teams'),
+    
+    updateTeamsSettings: (data: {
+        characterTeamId?: string;
+        moderationTeamId?: string;
+        forceTeamId?: string;
+        operationsTeamId?: string;
+        publicationTeamId?: string;
+    }) => apiClient.put('/system/teams', data),
+};
+
 // Species API
 export const speciesApi = {
     getSpecies: () => 

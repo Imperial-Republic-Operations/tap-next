@@ -735,6 +735,333 @@ export interface VehicleModel {
     updatedAt: Date;
 }
 
+// Politics Types
+export interface Senator {
+    id: bigint;
+    name: string;
+    seatType: 'NONE' | 'ELECTED' | 'APPOINTED';
+    planetId: bigint;
+    planet: {
+        id: bigint;
+        name: string;
+    };
+    committeeId?: bigint | null;
+    committee?: {
+        id: bigint;
+        name: string;
+        color?: string | null;
+        temporary?: boolean;
+    } | null;
+    userId?: string | null;
+    user?: {
+        id: string;
+        name?: string | null;
+        username: string;
+        image?: string | null;
+    } | null;
+    chairCommittee?: {
+        id: bigint;
+        name: string;
+        color?: string | null;
+    } | null;
+    viceChairCommittee?: {
+        id: bigint;
+        name: string;
+        color?: string | null;
+    } | null;
+}
+
+export interface SenateCommittee {
+    id: bigint;
+    name: string;
+    color?: string | null;
+    temporary: boolean;
+    chairId?: bigint | null;
+    chair?: {
+        id: bigint;
+        name: string;
+        user?: {
+            id: string;
+            name?: string | null;
+            username: string;
+            image?: string | null;
+        } | null;
+    } | null;
+    viceChairId?: bigint | null;
+    viceChair?: {
+        id: bigint;
+        name: string;
+        user?: {
+            id: string;
+            name?: string | null;
+            username: string;
+            image?: string | null;
+        } | null;
+    } | null;
+    senators?: {
+        id: bigint;
+        name: string;
+        seatType: 'NONE' | 'ELECTED' | 'APPOINTED';
+        planet?: {
+            id: bigint;
+            name: string;
+        };
+        user?: {
+            id: string;
+            name?: string | null;
+            username: string;
+            image?: string | null;
+        } | null;
+    }[];
+    _count?: {
+        senators: number;
+    };
+}
+
+export interface SenateSettings {
+    id: number;
+    supremeRulerPositionId: bigint;
+    supremeRulerPosition: {
+        id: bigint;
+        name: string;
+        organization: {
+            id: bigint;
+            name: string;
+            abbreviation: string;
+        };
+        members?: {
+            character: {
+                id: bigint;
+                name: string;
+                user?: {
+                    id: string;
+                    name?: string | null;
+                    username: string;
+                } | null;
+            };
+        }[];
+    };
+    presidentPositionId: bigint;
+    presidentPosition: {
+        id: bigint;
+        name: string;
+        organization: {
+            id: bigint;
+            name: string;
+            abbreviation: string;
+        };
+        members?: {
+            character: {
+                id: bigint;
+                name: string;
+                user?: {
+                    id: string;
+                    name?: string | null;
+                    username: string;
+                } | null;
+            };
+        }[];
+    };
+    vicePresidentPositionId: bigint;
+    vicePresidentPosition: {
+        id: bigint;
+        name: string;
+        organization: {
+            id: bigint;
+            name: string;
+            abbreviation: string;
+        };
+        members?: {
+            character: {
+                id: bigint;
+                name: string;
+                user?: {
+                    id: string;
+                    name?: string | null;
+                    username: string;
+                } | null;
+            };
+        }[];
+    };
+}
+
+export interface HighCouncilSettings {
+    id: number;
+    chairmanPositionId: bigint;
+    chairmanPosition: {
+        id: bigint;
+        name: string;
+        organization: {
+            id: bigint;
+            name: string;
+            abbreviation: string;
+        };
+        members?: {
+            character: {
+                id: bigint;
+                name: string;
+                user?: {
+                    id: string;
+                    name?: string | null;
+                    username: string;
+                } | null;
+            };
+        }[];
+    };
+    viceChairmanPositionId: bigint;
+    viceChairmanPosition: {
+        id: bigint;
+        name: string;
+        organization: {
+            id: bigint;
+            name: string;
+            abbreviation: string;
+        };
+        members?: {
+            character: {
+                id: bigint;
+                name: string;
+                user?: {
+                    id: string;
+                    name?: string | null;
+                    username: string;
+                } | null;
+            };
+        }[];
+    };
+    highCouncilorPositionId: bigint;
+    highCouncilorPosition: {
+        id: bigint;
+        name: string;
+        organization: {
+            id: bigint;
+            name: string;
+            abbreviation: string;
+        };
+        members?: {
+            character: {
+                id: bigint;
+                name: string;
+                user?: {
+                    id: string;
+                    name?: string | null;
+                    username: string;
+                } | null;
+            };
+        }[];
+    };
+    honoraryHighCouncilorPositionId: bigint;
+    honoraryHighCouncilorPosition: {
+        id: bigint;
+        name: string;
+        organization: {
+            id: bigint;
+            name: string;
+            abbreviation: string;
+        };
+        members?: {
+            character: {
+                id: bigint;
+                name: string;
+                user?: {
+                    id: string;
+                    name?: string | null;
+                    username: string;
+                } | null;
+            };
+        }[];
+    };
+}
+
+export interface TeamsSettings {
+    id: number;
+    characterTeamId: bigint;
+    characterTeam: {
+        id: bigint;
+        name: string;
+        abbreviation: string;
+        admin?: {
+            id: string;
+            name?: string | null;
+            username: string;
+        } | null;
+        members?: {
+            id: string;
+            name?: string | null;
+            username: string;
+        }[];
+    };
+    moderationTeamId: bigint;
+    moderationTeam: {
+        id: bigint;
+        name: string;
+        abbreviation: string;
+        admin?: {
+            id: string;
+            name?: string | null;
+            username: string;
+        } | null;
+        members?: {
+            id: string;
+            name?: string | null;
+            username: string;
+        }[];
+    };
+    forceTeamId: bigint;
+    forceTeam: {
+        id: bigint;
+        name: string;
+        abbreviation: string;
+        admin?: {
+            id: string;
+            name?: string | null;
+            username: string;
+        } | null;
+        members?: {
+            id: string;
+            name?: string | null;
+            username: string;
+        }[];
+    };
+    operationsTeamId: bigint;
+    operationsTeam: {
+        id: bigint;
+        name: string;
+        abbreviation: string;
+        admin?: {
+            id: string;
+            name?: string | null;
+            username: string;
+        } | null;
+        members?: {
+            id: string;
+            name?: string | null;
+            username: string;
+        }[];
+    };
+    publicationTeamId: bigint;
+    publicationTeam: {
+        id: bigint;
+        name: string;
+        abbreviation: string;
+        admin?: {
+            id: string;
+            name?: string | null;
+            username: string;
+        } | null;
+        members?: {
+            id: string;
+            name?: string | null;
+            username: string;
+        }[];
+    };
+}
+
+export interface PoliticsHubData {
+    senators: Senator[];
+    committees: SenateCommittee[];
+}
+
 // Additional supporting types that might be needed
 export interface SuborganizationData {
     id: bigint;
