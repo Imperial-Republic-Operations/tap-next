@@ -75,6 +75,7 @@ export interface Translations {
         openCharacterMenu: string;
         openUserMenu: string;
         more: string;
+        references: string;
         administration: string;
         userAdministration: string;
         calendarSettings: string;
@@ -89,9 +90,12 @@ export interface Translations {
         documents: string;
         inventory: string;
         map: string;
+        politics: string;
         rules: string;
         staff: string;
         patchNotes: string;
+        systemSettings: string;
+        worklog: string;
     };
     breadcrumb: {
         editing: string;
@@ -245,6 +249,7 @@ const translations: Record<SupportedLanguage, Translations> = {
             openCharacterMenu: 'Open character menu',
             openUserMenu: 'Open user menu',
             more: 'More',
+            references: 'References',
             administration: 'Administration',
             userAdministration: 'User Administration',
             calendarSettings: 'Calendar Settings',
@@ -259,9 +264,12 @@ const translations: Record<SupportedLanguage, Translations> = {
             documents: 'Documents',
             inventory: 'Inventory',
             map: 'Galaxy Map',
+            politics: 'Politics',
             rules: 'Rules',
             staff: 'Staff',
             patchNotes: 'Patch Notes',
+            systemSettings: 'System Settings',
+            worklog: 'Development Worklog',
         },
         breadcrumb: {
             editing: 'Editing:',
@@ -392,6 +400,7 @@ const translations: Record<SupportedLanguage, Translations> = {
             openCharacterMenu: 'Abrir menú de personaje',
             openUserMenu: 'Abrir menú de usuario',
             more: 'Más',
+            references: 'Referencias',
             administration: 'Administración',
             userAdministration: 'Administración de Usuarios',
             calendarSettings: 'Configuración de Calendario',
@@ -406,9 +415,12 @@ const translations: Record<SupportedLanguage, Translations> = {
             documents: 'Documentos',
             inventory: 'Inventario',
             map: 'Mapa de la Galaxia',
+            politics: 'Política',
             rules: 'Normas',
             staff: 'El Personal',
             patchNotes: 'Notas del parches',
+            systemSettings: 'Configuración del sistema',
+            worklog: 'Registro de trabajo de desarrollo',
         },
         breadcrumb: {
             editing: 'Editando:',
@@ -539,6 +551,7 @@ const translations: Record<SupportedLanguage, Translations> = {
             openCharacterMenu: 'Ouvrir le menu personnage',
             openUserMenu: 'Ouvrir le menu utilisateur',
             more: 'Plus',
+            references: 'Références',
             administration: 'Administration',
             userAdministration: 'Administration des Utilisateurs',
             calendarSettings: 'Paramètres de Calendrier',
@@ -553,9 +566,12 @@ const translations: Record<SupportedLanguage, Translations> = {
             documents: 'Documents',
             inventory: 'Inventaire',
             map: 'Carte de la Galaxie',
+            politics: 'Politique',
             rules: 'Règle',
             staff: 'Le Personnelle',
             patchNotes: 'Notes de mise à jour',
+            systemSettings: 'Paramètres système',
+            worklog: 'Journal de travail de développement',
         },
         breadcrumb: {
             editing: 'Modification:',
@@ -686,6 +702,7 @@ const translations: Record<SupportedLanguage, Translations> = {
             openCharacterMenu: 'Charaktermenü öffnen',
             openUserMenu: 'Benutzermenü öffnen',
             more: 'Mehr',
+            references: 'Verweise',
             administration: 'Verwaltung',
             userAdministration: 'Benutzerverwaltung',
             calendarSettings: 'Kalendereinstellungen',
@@ -700,9 +717,12 @@ const translations: Record<SupportedLanguage, Translations> = {
             documents: 'Dokumente',
             inventory: 'Inventar',
             map: 'Galaxienkarte',
+            politics: 'Politik',
             rules: 'Regel',
             staff: 'Mitarbeiterin',
             patchNotes: 'Patchnotizen',
+            systemSettings: 'Systemeinstellungen',
+            worklog: 'Entwicklungs-Worklog',
         },
         breadcrumb: {
             editing: 'Bearbeitung:',

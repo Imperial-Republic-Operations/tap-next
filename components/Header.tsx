@@ -54,7 +54,7 @@ function getNavigationConfig(t: any): NavigationConfig {
             { title: t.header.documents, route: "/documents", exact: false, access: { type: 'open' }, devOnly: false },
             { title: t.header.inventory, route: "/inventory", exact: false, access: { type: 'role', role: roles[1] }, devOnly: false },
             { title: t.header.map, route: "/map", exact: false, access: { type: 'role', role: roles[1] }, devOnly: false },
-            { title: t.header.map, route: "/politics", exact: false, access: { type: 'role', role: roles[1] }, devOnly: false },
+            { title: t.header.politics, route: "/politics", exact: false, access: { type: 'role', role: roles[1] }, devOnly: false },
             // TODO: Add a way to add additional criterion for a link to appear in the header (ex: having an aware force-sensitive character (or the active character being aware of being force-sensitive?))
             // { title: t.header.map, route: "/force", exact: false, access: { type: 'role', role: roles[1] }, devOnly: false },
         ],
@@ -62,7 +62,7 @@ function getNavigationConfig(t: any): NavigationConfig {
             title: t.header.more,
             sections: [
                 {
-                    label: 'Section Name Pending',
+                    label: t.header.references,
                     items: [
                         { title: t.header.rules, route: "/rules", exact: false, access: { type: 'open' }, devOnly: false },
                         { title: t.header.staff, route: "/staff", exact: false, access: { type: 'open' }, devOnly: false },
@@ -74,8 +74,9 @@ function getNavigationConfig(t: any): NavigationConfig {
                     items: [
                         { title: t.header.userAdministration, route: "/users", exact: false, access: { type: 'role', role: roles[4] }, devOnly: false },
                         { title: t.header.calendarSettings, route: "/calendar", exact: false, access: { type: 'role', role: roles[3] }, devOnly: false },
-                        { title: t.header.calendarSettings, route: "/system", exact: false, access: { type: 'role', role: roles[6] }, devOnly: false },
+                        { title: t.header.systemSettings, route: "/system", exact: false, access: { type: 'role', role: roles[6] }, devOnly: false },
                         { title: t.header.notificationsTest, route: "/notifications/test", exact: false, access: { type: 'role', role: roles[6] }, devOnly: true },
+                        { title: t.header.worklog, route: "/worklog", exact: false, access: { type: 'team', team: 'operations', overrideRole: roles[6] }, devOnly: true },
                     ]
                 },
             ],
