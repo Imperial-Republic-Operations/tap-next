@@ -4,6 +4,7 @@ import React from "react";
 import { roles } from "@/lib/roles";
 import { useSession } from "next-auth/react";
 import CollapsibleSidebar from "@/components/CollapsibleSidebar";
+import { NavigationItem } from "@/lib/navigation";
 
 export default function MapLayout({
     children,
@@ -12,9 +13,9 @@ export default function MapLayout({
 }>) {
     const { data: session, status } = useSession();
 
-    const navigationLinks: {title: string, path: string, exact: boolean, signInRequired: boolean, role?: string}[] = [
-        { title: "Galaxy Map", path: "/map", exact: true, signInRequired: true, role: roles[1] },
-        { title: "Map Editor", path: "/map/edit", exact: false, signInRequired: true, role: roles[4] }
+    const navigationLinks: NavigationItem[] = [
+        { title: "Galaxy Map", path: "/map", exact: true, access: { type: 'role', role: roles[1] } },
+        { title: "Map Editor", path: "/map/edit", exact: false, access: { type: 'role-and-team', role: roles[4], team: 'moderation', overrideRole: roles[6] } }
     ];
 
     return(

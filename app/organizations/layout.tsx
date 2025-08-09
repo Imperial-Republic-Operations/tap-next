@@ -2,11 +2,12 @@ import React from "react";
 import { roles } from "@/lib/roles";
 import CollapsibleSidebar from "@/components/CollapsibleSidebar";
 import { getSession } from "@/lib/auth";
+import { NavigationItem } from "@/lib/navigation";
 
-const navigationLinks: {title: string, path: string, exact: boolean, signInRequired: boolean, role?: string, badge?: number}[] = [
-    { title: "Dashboard", path: "/organizations", exact: true, signInRequired: false },
-    { title: "Security Clearances", path: "/organizations/security-clearances", exact: true, signInRequired: true, role: roles[3] },
-    { title: "Characters with Clearances", path: "/organizations/characters-with-clearances", exact: true, signInRequired: true, role: roles[2] },
+const navigationLinks: NavigationItem[] = [
+    { title: "Dashboard", path: "/organizations", exact: true, access: { type: 'open' } },
+    { title: "Security Clearances", path: "/organizations/security-clearances", exact: true, access: { type: 'role', role: roles[3] } },
+    { title: "Characters with Clearances", path: "/organizations/characters-with-clearances", exact: true, access: { type: 'role', role: roles[2] } },
 ];
 
 export default async function OrganizationLayout({

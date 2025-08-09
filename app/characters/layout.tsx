@@ -5,6 +5,7 @@ import { roles } from "@/lib/roles";
 import { useSession } from "next-auth/react";
 import CollapsibleSidebar from "@/components/CollapsibleSidebar";
 import { charactersApi } from "@/lib/apiClient";
+import { NavigationItem } from "@/lib/navigation";
 
 export default function CharacterLayout({
                                        children,
@@ -27,9 +28,9 @@ export default function CharacterLayout({
         fetchPendingCount();
     }, []);
 
-    const navigationLinks: {title: string, path: string, exact: boolean, signInRequired: boolean, role?: string, badge?: number}[] = [
-        { title: "Dashboard", path: "/characters", exact: true, signInRequired: true, role: roles[1] },
-        { title: "Approval Queue", path: "/characters/pending", exact: false, signInRequired: true, role: roles[3], badge: pendingCount }
+    const navigationLinks: NavigationItem[] = [
+        { title: "Dashboard", path: "/characters", exact: true, access: { type: 'role', role: roles[1] } },
+        { title: "Approval Queue", path: "/characters/pending", exact: false, access: { type: 'role-and-team', role: roles[3], team: 'character', overrideRole: roles[5] }, badge: pendingCount }
     ];
 
     return(

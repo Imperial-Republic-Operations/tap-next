@@ -8,7 +8,7 @@ import {
     Permission,
     PrismaClient, RankTier,
     RealMonth
-} from "../lib/generated/prisma";
+} from "@/lib/generated/prisma";
 
 const prisma = new PrismaClient();
 
@@ -206,6 +206,7 @@ async function main() {
     //endregion
 
     console.log('📅 Seeding Current Year...');
+    //region Calendar
     const currentYear = await prisma.year.upsert({
         where: {id: 1},
         update: {},
@@ -339,6 +340,7 @@ async function main() {
             },
         }),
     ]);
+    //endregion
 
     console.log('🌌 Seeding Galaxy Map...');
     //region Galaxy Map
@@ -2511,6 +2513,38 @@ async function main() {
             organizationId: irPraetorian.id,
         },
     });
+
+    const irHighCouncilor = await prisma.position.upsert({
+        where: {
+            name_organizationId: {
+                name: 'High Councilor',
+                organizationId: irHighCouncil.id,
+            }
+        },
+        update: {},
+        create: {
+            name: 'High Councilor',
+            exclusive: false,
+            stipend: 0,
+            organizationId: irHighCouncil.id,
+        },
+    });
+
+    const irHonoraryHighCouncilor = await prisma.position.upsert({
+        where: {
+            name_organizationId: {
+                name: 'Honorary High Councilor',
+                organizationId: irHighCouncil.id,
+            }
+        },
+        update: {},
+        create: {
+            name: 'Honorary High Councilor',
+            exclusive: false,
+            stipend: 0,
+            organizationId: irHighCouncil.id,
+        },
+    });
     //endregion
     //endregion
 
@@ -2689,7 +2723,7 @@ async function main() {
     //endregion
 
     //region 6
-    const irHighCouncilor = await prisma.rank.upsert({
+    const irHighCouncilorRank = await prisma.rank.upsert({
         where: {
             name_organizationId: {
                 name: 'High Councilor',
@@ -3719,6 +3753,7 @@ async function main() {
     //endregion
 
     console.log('➕ Seeding Character memberships...');
+    //region Memberships
     const memberships = await Promise.all([
         prisma.member.upsert({
             where: {
@@ -3928,6 +3963,7 @@ async function main() {
             },
         }),
     ]);
+    //endregion
 
     console.log('🛠️ Seeding Item Models...');
     //region Item Models
@@ -3942,55 +3978,56 @@ async function main() {
     //endregion
 
     console.log('👥 Seeding Staff Teams...');
-    const teams = await Promise.all([
-        prisma.team.upsert({
-            where: {name: 'Publishing, Authoring and Review Team'},
-            update: {},
-            create: {
-                name: 'Publishing, Authoring and Review Team',
-                abbreviation: 'PART',
-                currentSequence: 0,
-            },
-        }),
-        prisma.team.upsert({
-            where: {name: 'Character Administration Team'},
-            update: {},
-            create: {
-                name: 'Character Administration Team',
-                abbreviation: 'CAT',
-                currentSequence: 0,
-            },
-        }),
-        prisma.team.upsert({
-            where: {name: 'Scenario Moderation, Approvals, & Regulations Team'},
-            update: {},
-            create: {
-                name: 'Scenario Moderation, Approvals, & Regulations Team',
-                abbreviation: 'SMART',
-                currentSequence: 0,
-            },
-        }),
-        prisma.team.upsert({
-            where: {name: 'Force Administration & Training Enforcement'},
-            update: {},
-            create: {
-                name: 'Force Administration & Training Enforcement',
-                abbreviation: 'FATE',
-                currentSequence: 0,
-            },
-        }),
-        prisma.team.upsert({
-            where: {name: 'Technology Operations Control'},
-            update: {},
-            create: {
-                name: 'Technology Operations Control',
-                abbreviation: 'TOC',
-                currentSequence: 0,
-            },
-        }),
-    ]);
+    //region Teams
+    const part = await prisma.team.upsert({
+        where: { name: 'Publishing, Authoring and Review Team' },
+        update: {},
+        create: {
+            name: 'Publishing, Authoring and Review Team',
+            abbreviation: 'PART',
+            currentSequence: 0,
+        },
+    });
+    const cat = await prisma.team.upsert({
+        where: { name: 'Character Administration Team' },
+        update: {},
+        create: {
+            name: 'Character Administration Team',
+            abbreviation: 'CAT',
+            currentSequence: 0,
+        },
+    });
+    const smart = await prisma.team.upsert({
+        where: { name: 'Scenario Moderation, Approvals, & Regulations Team' },
+        update: {},
+        create: {
+            name: 'Scenario Moderation, Approvals, & Regulations Team',
+            abbreviation: 'SMART',
+            currentSequence: 0,
+        },
+    });
+    const fate = await prisma.team.upsert({
+        where: {name: 'Force Administration & Training Enforcement'},
+        update: {},
+        create: {
+            name: 'Force Administration & Training Enforcement',
+            abbreviation: 'FATE',
+            currentSequence: 0,
+        },
+    });
+    const toc = await prisma.team.upsert({
+        where: {name: 'Technology Operations Control'},
+        update: {},
+        create: {
+            name: 'Technology Operations Control',
+            abbreviation: 'TOC',
+            currentSequence: 0,
+        },
+    });
+    //endregion
 
     console.log('📄 Seeding Organization Document Types...');
+    //region Document Types
     const documentTypes = await Promise.all([
         prisma.documentType.upsert({
             where: {name: 'Supreme Command'},
@@ -4083,6 +4120,7 @@ async function main() {
             },
         }),
     ]);
+    //endregion
 
     console.log('🏅 Seeding Awards and Award Tiers...');
     //region Awards
@@ -4091,6 +4129,48 @@ async function main() {
 
     //region Award Tiers
     //endregion
+    //endregion
+
+    console.log('⚙️ Seeding System Settings...');
+    //region System Settings
+    const teamsSettings = await prisma.teamsSettings.upsert({
+        where: {
+            id: 1,
+        },
+        update: {},
+        create: {
+            characterTeamId: cat.id,
+            moderationTeamId: smart.id,
+            publicationTeamId: part.id,
+            operationsTeamId: toc.id,
+            forceTeamId: fate.id,
+        },
+    });
+
+    const senateSettings = await prisma.senateSettings.upsert({
+        where: {
+            id: 1,
+        },
+        update: {},
+        create: {
+            supremeRulerPositionId: irEmperor.id,
+            presidentPositionId: irChancellor.id,
+            vicePresidentPositionId: irViceChancellor.id,
+        },
+    });
+
+    const highCouncilSettings = await prisma.highCouncilSettings.upsert({
+        where: {
+            id: 1,
+        },
+        update: {},
+        create: {
+            chairmanPositionId: irEmperor.id,
+            viceChairmanPositionId: irChancellor.id,
+            highCouncilorPositionId: irHighCouncilor.id,
+            honoraryHighCouncilorPositionId: irHonoraryHighCouncilor.id,
+        },
+    })
     //endregion
 }
 main()

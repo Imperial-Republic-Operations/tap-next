@@ -7,8 +7,8 @@ import { CharacterDetails } from "@/lib/types";
 import {
     Activity,
     Award,
-    BarChart3,
     FileText,
+    Globe,
     Package,
     Settings,
     Shield,
@@ -83,8 +83,8 @@ export default function HomeClient({session, status, activeCharacter, dashboardS
                         </h1>
 
                         <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed">
-                            Immerse yourself in a galaxy-spanning simulation. Create characters, join organizations,
-                            complete missions, and forge your destiny among the stars.
+                            Immerse yourself in a galaxy-spanning simulation for the Era of the Imperial Republic RPG.
+                            Create characters, join organizations, complete missions, and forge your destiny among the stars.
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -148,10 +148,10 @@ export default function HomeClient({session, status, activeCharacter, dashboardS
                             highlight: 'Power Development'
                         },
                         {
-                            icon: BarChart3,
-                            title: 'Analytics',
-                            desc: 'Track character development, organizational metrics, and system-wide statistics',
-                            highlight: 'Performance Insights'
+                            icon: Globe,
+                            title: 'Galaxy Map',
+                            desc: 'Navigate interactive star charts, explore systems, and track territorial control',
+                            highlight: 'Galactic Navigation'
                         },
                         {
                             icon: Shield,

@@ -39,6 +39,8 @@ model User {
   documents     GameDocument[]
   senator       Senator?
   notifications Notification[]
+
+  @@map("users")
 }
 
 model UserSettings {
@@ -56,6 +58,8 @@ model UserSettings {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("user_settings")
 }
 
 model Account {
@@ -79,6 +83,7 @@ model Account {
 
   @@unique([provider, providerAccountId])
   @@index([userId])
+  @@map("accounts")
 }
 
 model Session {
@@ -92,6 +97,7 @@ model Session {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@map("sessions")
 }
 
 model VerificationToken {
@@ -100,6 +106,7 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+  @@map("verification_tokens")
 }
 
 model Team {
@@ -114,8 +121,15 @@ model Team {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  documents GameDocument[]
-  members   User[]         @relation("teamMember")
+  documents              GameDocument[]
+  members                User[]         @relation("teamMember")
+  characterTeamSetting   TeamsSettings? @relation("characterTeam")
+  moderationTeamSetting  TeamsSettings? @relation("moderationTeam")
+  forceTeamSetting       TeamsSettings? @relation("forceTeam")
+  operationsTeamSetting  TeamsSettings? @relation("operationsTeam")
+  publicationTeamSetting TeamsSettings? @relation("publicationTeam")
+
+  @@map("teams")
 }
 
 enum Role {
@@ -163,6 +177,7 @@ model Organization {
   awards        Award[]
 
   @@unique([name, parentId])
+  @@map("organizations")
 }
 
 model Rank {
@@ -182,6 +197,7 @@ model Rank {
   members Member[]
 
   @@unique([name, organizationId])
+  @@map("ranks")
 }
 
 model Position {
@@ -207,6 +223,7 @@ model Position {
   hcHonoraryCouncilorSetting HighCouncilSettings? @relation("honoraryHighCouncilorPosition")
 
   @@unique([name, organizationId])
+  @@map("positions")
 }
 
 model PositionPermission {
@@ -215,6 +232,8 @@ model PositionPermission {
 
   positionId BigInt
   position   Position @relation(fields: [positionId], references: [id])
+
+  @@map("position_permissions")
 }
 
 model SecurityClearance {
@@ -228,6 +247,8 @@ model SecurityClearance {
   characters        Character[]
   listOrganizations OrganizationDocument[] @relation("listClearance")
   viewOrganizations OrganizationDocument[] @relation("viewClearance")
+
+  @@map("security_clearances")
 }
 
 model Member {
@@ -250,6 +271,7 @@ model Member {
   updatedAt DateTime @updatedAt
 
   @@unique([characterId, organizationId])
+  @@map("memberships")
 }
 
 enum OrganizationType {
@@ -353,6 +375,8 @@ model Character {
   educationHistory  CharacterEducation[]
   honors            CharacterHonor[]
   goals             CharacterGoal[]
+
+  @@map("characters")
 }
 
 // CharacterInteraction
@@ -363,6 +387,7 @@ model CharacterInteraction {
   character   Character @relation(fields: [characterId], references: [id])
 
   @@id([characterId, interaction])
+  @@map("character_interactions")
 }
 
 // CharacterPreviousPosition
@@ -373,6 +398,7 @@ model CharacterPreviousPosition {
   character   Character @relation(fields: [characterId], references: [id])
 
   @@id([characterId, position])
+  @@map("character_career_history")
 }
 
 // CharacterEducation
@@ -383,6 +409,7 @@ model CharacterEducation {
   character   Character @relation(fields: [characterId], references: [id])
 
   @@id([characterId, education])
+  @@map("character_education_history")
 }
 
 // CharacterHonor
@@ -393,6 +420,7 @@ model CharacterHonor {
   character   Character @relation(fields: [characterId], references: [id])
 
   @@id([characterId, honor])
+  @@map("character_honors")
 }
 
 // CharacterGoal
@@ -403,6 +431,7 @@ model CharacterGoal {
   character   Character @relation(fields: [characterId], references: [id])
 
   @@id([characterId, goal])
+  @@map("character_goals")
 }
 
 model Species {
@@ -414,6 +443,8 @@ model Species {
   updatedAt DateTime @updatedAt
 
   characters Character[]
+
+  @@map("species")
 }
 
 model Peerage {
@@ -427,6 +458,8 @@ model Peerage {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("character_peerages")
 }
 
 enum Gender {
@@ -489,6 +522,8 @@ model Oversector {
   updatedAt DateTime @default(now()) @updatedAt
 
   sectors Sector[]
+
+  @@map("oversectors")
 }
 
 model Sector {
@@ -511,6 +546,8 @@ model Sector {
   updatedAt DateTime @default(now()) @updatedAt
 
   systems System[]
+
+  @@map("sectors")
 }
 
 model System {
@@ -533,6 +570,8 @@ model System {
   updatedAt DateTime @default(now()) @updatedAt
 
   planets Planet[]
+
+  @@map("systems")
 }
 
 model Planet {
@@ -558,6 +597,8 @@ model Planet {
   characters Character[]
   peerage    Peerage?
   senators   Senator[]
+
+  @@map("planets")
 }
 
 // Force
@@ -576,6 +617,8 @@ model ForceProfile {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("force_profiles")
 }
 
 model ForceOrder {
@@ -588,6 +631,8 @@ model ForceOrder {
 
   titles  ForceTitle[]
   members ForceProfile[]
+
+  @@map("force_orders")
 }
 
 model ForceAbility {
@@ -600,6 +645,8 @@ model ForceAbility {
   updatedAt DateTime @updatedAt
 
   trainingSessions TrainingSession[]
+
+  @@map("force_abilities")
 }
 
 model ForceTitle {
@@ -614,6 +661,7 @@ model ForceTitle {
   updatedAt DateTime @updatedAt
 
   @@unique([level, orderId])
+  @@map("force_titles")
 }
 
 model TrainingSession {
@@ -631,6 +679,8 @@ model TrainingSession {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("force_training_sessions")
 }
 
 enum Alignment {
@@ -660,6 +710,8 @@ model Month {
   gameMonth String
 
   updatedAt DateTime @updatedAt
+
+  @@map("calendar_months")
 }
 
 model Year {
@@ -671,6 +723,7 @@ model Year {
   createdAt DateTime @default(now())
 
   @@unique([gameYear, era])
+  @@map("calendar_years")
 }
 
 enum Era {
@@ -710,6 +763,8 @@ model CodeGen {
   document   GameDocument? @relation(fields: [documentId], references: [id])
 
   createdAt DateTime @default(now())
+
+  @@map("code_gen")
 }
 
 enum CodeReason {
@@ -736,6 +791,8 @@ model GameDocument {
   updatedAt DateTime @updatedAt
 
   approvalCode CodeGen?
+
+  @@map("game_documents")
 }
 
 model OrganizationDocument {
@@ -766,6 +823,8 @@ model OrganizationDocument {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("organization_documents")
 }
 
 model PersonalDocument {
@@ -780,6 +839,8 @@ model PersonalDocument {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("personal_documents")
 }
 
 model DocumentSequence {
@@ -791,6 +852,8 @@ model DocumentSequence {
 
   organizationId BigInt
   organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@map("document_sequences")
 }
 
 model DocumentType {
@@ -801,6 +864,8 @@ model DocumentType {
   useOrganization      Boolean                @default(true)
   OrganizationDocument OrganizationDocument[]
   DocumentSequence     DocumentSequence[]
+
+  @@map("document_types")
 }
 
 enum DocumentStatus {
@@ -838,6 +903,7 @@ model CreditAccount {
   receivedTransfers CreditTransfer[] @relation("ReceivedTransfers")
 
   @@unique([type, accountNumber])
+  @@map("credit_accounts")
 }
 
 model Inventory {
@@ -858,6 +924,8 @@ model Inventory {
   vehicles          Vehicle[]
   sentTransfers     InventoryTransfer[] @relation("SentTransfers")
   receivedTransfers InventoryTransfer[] @relation("ReceivedTransfers")
+
+  @@map("inventories")
 }
 
 model Item {
@@ -874,6 +942,8 @@ model Item {
   updatedAt DateTime @updatedAt
 
   transfers InventoryTransferItem[]
+
+  @@map("items")
 }
 
 model Ship {
@@ -893,6 +963,8 @@ model Ship {
   updatedAt DateTime @updatedAt
 
   transfers InventoryTransferItem[]
+
+  @@map("ships")
 }
 
 model Vehicle {
@@ -911,6 +983,8 @@ model Vehicle {
   updatedAt DateTime @updatedAt
 
   transfers InventoryTransferItem[]
+
+  @@map("vehicles")
 }
 
 model ItemModel {
@@ -926,6 +1000,8 @@ model ItemModel {
   updatedAt DateTime @updatedAt
 
   items Item[]
+
+  @@map("item_models")
 }
 
 model ShipModel {
@@ -941,6 +1017,8 @@ model ShipModel {
   updatedAt DateTime @updatedAt
 
   ships Ship[]
+
+  @@map("ship_models")
 }
 
 model VehicleModel {
@@ -955,6 +1033,8 @@ model VehicleModel {
   updatedAt DateTime @updatedAt
 
   vehicles Vehicle[]
+
+  @@map("vehicle_models")
 }
 
 model CreditTransfer {
@@ -969,6 +1049,8 @@ model CreditTransfer {
 
   recipientId BigInt
   recipient   CreditAccount @relation("ReceivedTransfers", fields: [recipientId], references: [id])
+
+  @@map("credit_transfers")
 }
 
 model InventoryTransfer {
@@ -982,6 +1064,8 @@ model InventoryTransfer {
   recipient   Inventory @relation("ReceivedTransfers", fields: [recipientId], references: [id])
 
   assets InventoryTransferItem[]
+
+  @@map("inventory_transfers")
 }
 
 model InventoryTransferItem {
@@ -1001,6 +1085,8 @@ model InventoryTransferItem {
 
   vehicleId BigInt?
   vehicle   Vehicle? @relation(fields: [vehicleId], references: [id])
+
+  @@map("inventory_transfer_items")
 }
 
 enum InventoryType {
@@ -1036,6 +1122,8 @@ model Award {
   updatedAt DateTime @updatedAt
 
   tiers AwardTier[]
+
+  @@map("awards")
 }
 
 model AwardTier {
@@ -1049,6 +1137,8 @@ model AwardTier {
   updatedAt DateTime @updatedAt
 
   characters CharacterAward[]
+
+  @@map("award_tiers")
 }
 
 model CharacterAward {
@@ -1061,6 +1151,8 @@ model CharacterAward {
 
   awardId BigInt
   award   AwardTier @relation(fields: [awardId], references: [id])
+
+  @@map("character_awards")
 }
 
 enum AwardStatus {
@@ -1088,6 +1180,8 @@ model Senator {
   chairCommittee SenateCommittee? @relation("committeeChair")
 
   viceChairCommittee SenateCommittee? @relation("viceCommitteeChair")
+
+  @@map("senators")
 }
 
 model SenateCommittee {
@@ -1103,6 +1197,8 @@ model SenateCommittee {
   viceChair   Senator? @relation("viceCommitteeChair", fields: [viceChairId], references: [id])
 
   senators Senator[] @relation("committeeMembership")
+
+  @@map("senate_committees")
 }
 
 enum SeatType {
@@ -1123,9 +1219,32 @@ model Notification {
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
 }
 
 // System Settings
+model TeamsSettings {
+  id Int @id @default(1)
+
+  characterTeamId BigInt @unique
+  characterTeam   Team   @relation("characterTeam", fields: [characterTeamId], references: [id])
+
+  moderationTeamId BigInt @unique
+  moderationTeam   Team   @relation("moderationTeam", fields: [moderationTeamId], references: [id])
+
+  forceTeamId BigInt @unique
+  forceTeam   Team   @relation("forceTeam", fields: [forceTeamId], references: [id])
+
+  operationsTeamId BigInt @unique
+  operationsTeam   Team   @relation("operationsTeam", fields: [operationsTeamId], references: [id])
+
+  publicationTeamId BigInt @unique
+  publicationTeam   Team   @relation("publicationTeam", fields: [publicationTeamId], references: [id])
+
+  @@map("teams_settings")
+}
+
 model SenateSettings {
   id Int @id @default(1)
 
@@ -1137,6 +1256,8 @@ model SenateSettings {
 
   vicePresidentPositionId BigInt   @unique
   vicePresidentPosition   Position @relation("vicePresidentPosition", fields: [vicePresidentPositionId], references: [id])
+
+  @@map("senate_settings")
 }
 
 model HighCouncilSettings {
@@ -1153,4 +1274,6 @@ model HighCouncilSettings {
 
   honoraryHighCouncilorPositionId BigInt   @unique
   honoraryHighCouncilorPosition   Position @relation("honoraryHighCouncilorPosition", fields: [honoraryHighCouncilorPositionId], references: [id])
+
+  @@map("high_council_settings")
 }

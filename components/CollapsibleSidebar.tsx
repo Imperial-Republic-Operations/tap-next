@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import { Team, UserWithTeamAndTeams } from "@/lib/types";
 import { classNames } from "@/lib/style";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
-import { userHasAccess } from "@/lib/roles";
 import { Session } from "next-auth";
 import { usersApi } from "@/lib/apiClient";
 import { useFormatting } from '@/hooks/useFormatting';
+import { NavigationItem, userHasNavigationAccess } from "@/lib/navigation";
 
-export default function CollapsibleSidebar({navigation, session, status}: {navigation: {title: string, path: string, exact: boolean, signInRequired: boolean, role?: string, badge?: number}[], session: Session | null, status: 'authenticated' | 'loading' | 'unauthenticated'}) {
+export default function CollapsibleSidebar({navigation, session}: {navigation: NavigationItem[], session: Session | null}) {
     const { t } = useFormatting();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [teams, setTeams] = useState<Team[]>([]);
@@ -128,7 +128,7 @@ export default function CollapsibleSidebar({navigation, session, status}: {navig
                             <li>
                                 <ul className="-mx-2 space-y-1">
                                     {navigation
-                                        .filter((item) => !item.signInRequired || (item.signInRequired && status === "authenticated" && userHasAccess(item.role ? item.role : null, session?.user)))
+                                        .filter((item) => userHasNavigationAccess(item.access, session?.user))
                                         .map((link) => (
                                             <li key={link.title}>
                                                 <a

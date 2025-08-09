@@ -1,9 +1,10 @@
 import React from "react";
 import { getSession } from "@/lib/auth";
 import CollapsibleSidebar from "@/components/CollapsibleSidebar";
+import { NavigationItem } from "@/lib/navigation";
 
-const navigationLinks: {title: string, path: string, exact: boolean, signInRequired: boolean, role?: string, badge?: number}[] = [
-    { title: "Dashboard", path: "/documents", exact: true, signInRequired: false },
+const navigationLinks: NavigationItem[] = [
+    { title: "Dashboard", path: "/documents", exact: true, access: { type: 'open' } },
 ];
 
 export default async function DocumentLayout({
