@@ -91,11 +91,34 @@ export interface Translations {
         inventory: string;
         map: string;
         politics: string;
+        force: string;
         rules: string;
         staff: string;
         patchNotes: string;
         systemSettings: string;
         worklog: string;
+    };
+    politics: {
+        dashboard: string;
+        senate: string;
+        committees: string;
+        highCouncil: string;
+        senators: string;
+        chairman: string;
+        viceChairman: string;
+        councilors: string;
+        honoraryCouncilors: string;
+        createSenator: string;
+        committeeMember: string;
+        committeeChair: string;
+        committeeViceChair: string;
+        noCommittee: string;
+        senateLeadership: string;
+        highCouncilLeadership: string;
+        senatorName: string;
+        planet: string;
+        seatType: string;
+        committee: string;
     };
     breadcrumb: {
         editing: string;
@@ -265,11 +288,34 @@ const translations: Record<SupportedLanguage, Translations> = {
             inventory: 'Inventory',
             map: 'Galaxy Map',
             politics: 'Politics',
+            force: 'The Force',
             rules: 'Rules',
             staff: 'Staff',
             patchNotes: 'Patch Notes',
             systemSettings: 'System Settings',
             worklog: 'Development Worklog',
+        },
+        politics: {
+            dashboard: 'Dashboard',
+            senate: 'Senate',
+            committees: 'Committees',
+            highCouncil: 'High Council',
+            senators: 'Senators',
+            chairman: 'Chairman',
+            viceChairman: 'Vice Chairman',
+            councilors: 'High Councilors',
+            honoraryCouncilors: 'Honorary High Councilors',
+            createSenator: 'Create Senator',
+            committeeMember: 'Committee Member',
+            committeeChair: 'Committee Chair',
+            committeeViceChair: 'Committee Vice Chair',
+            noCommittee: 'No Committee',
+            senateLeadership: 'Senate Leadership',
+            highCouncilLeadership: 'High Council Leadership',
+            senatorName: 'Senator Name',
+            planet: 'Planet',
+            seatType: 'Seat Type',
+            committee: 'Committee',
         },
         breadcrumb: {
             editing: 'Editing:',
@@ -416,11 +462,34 @@ const translations: Record<SupportedLanguage, Translations> = {
             inventory: 'Inventario',
             map: 'Mapa de la Galaxia',
             politics: 'Política',
+            force: 'The Force',
             rules: 'Normas',
             staff: 'El Personal',
             patchNotes: 'Notas del parches',
             systemSettings: 'Configuración del sistema',
             worklog: 'Registro de trabajo de desarrollo',
+        },
+        politics: {
+            dashboard: 'Panel',
+            senate: 'Senado',
+            committees: 'Comités',
+            highCouncil: 'Alto Consejo',
+            senators: 'Senadores',
+            chairman: 'Presidente',
+            viceChairman: 'Vicepresidente',
+            councilors: 'Altos Consejeros',
+            honoraryCouncilors: 'Consejeros Honorarios',
+            createSenator: 'Crear Senador',
+            committeeMember: 'Miembro del Comité',
+            committeeChair: 'Presidente del Comité',
+            committeeViceChair: 'Vicepresidente del Comité',
+            noCommittee: 'Sin Comité',
+            senateLeadership: 'Liderazgo del Senado',
+            highCouncilLeadership: 'Liderazgo del Alto Consejo',
+            senatorName: 'Nombre del Senador',
+            planet: 'Planeta',
+            seatType: 'Tipo de Escaño',
+            committee: 'Comité',
         },
         breadcrumb: {
             editing: 'Editando:',
@@ -567,6 +636,7 @@ const translations: Record<SupportedLanguage, Translations> = {
             inventory: 'Inventaire',
             map: 'Carte de la Galaxie',
             politics: 'Politique',
+            force: 'The Force',
             rules: 'Règle',
             staff: 'Le Personnelle',
             patchNotes: 'Notes de mise à jour',
@@ -607,6 +677,28 @@ const translations: Record<SupportedLanguage, Translations> = {
             assignees: 'Assignés',
             content: 'Contenu',
             signedBy: 'Signé par',
+        },
+        politics: {
+            dashboard: 'Tableau de bord',
+            senate: 'Sénat',
+            committees: 'Comités',
+            highCouncil: 'Haut Conseil',
+            senators: 'Sénateurs',
+            chairman: 'Président',
+            viceChairman: 'Vice-président',
+            councilors: 'Hauts Conseillers',
+            honoraryCouncilors: 'Conseillers Honoraires',
+            createSenator: 'Créer un Sénateur',
+            committeeMember: 'Membre du Comité',
+            committeeChair: 'Président du Comité',
+            committeeViceChair: 'Vice-président du Comité',
+            noCommittee: 'Aucun Comité',
+            senateLeadership: 'Direction du Sénat',
+            highCouncilLeadership: 'Direction du Haut Conseil',
+            senatorName: 'Nom du Sénateur',
+            planet: 'Planète',
+            seatType: 'Type de Siège',
+            committee: 'Comité',
         },
     },
     de: {
@@ -718,6 +810,7 @@ const translations: Record<SupportedLanguage, Translations> = {
             inventory: 'Inventar',
             map: 'Galaxienkarte',
             politics: 'Politik',
+            force: 'The Force',
             rules: 'Regel',
             staff: 'Mitarbeiterin',
             patchNotes: 'Patchnotizen',
@@ -758,6 +851,28 @@ const translations: Record<SupportedLanguage, Translations> = {
             assignees: 'Beauftragte',
             content: 'Inhalt',
             signedBy: 'Unterschrieben von',
+        },
+        politics: {
+            dashboard: 'Übersicht',
+            senate: 'Senat',
+            committees: 'Ausschüsse',
+            highCouncil: 'Hoher Rat',
+            senators: 'Senatoren',
+            chairman: 'Vorsitzender',
+            viceChairman: 'Stellvertretender Vorsitzender',
+            councilors: 'Hohe Räte',
+            honoraryCouncilors: 'Ehrenräte',
+            createSenator: 'Senator Erstellen',
+            committeeMember: 'Ausschussmitglied',
+            committeeChair: 'Ausschussvorsitzender',
+            committeeViceChair: 'Stellvertretender Ausschussvorsitzender',
+            noCommittee: 'Kein Ausschuss',
+            senateLeadership: 'Senatsführung',
+            highCouncilLeadership: 'Führung des Hohen Rates',
+            senatorName: 'Senator Name',
+            planet: 'Planet',
+            seatType: 'Sitztyp',
+            committee: 'Ausschuss',
         },
     },
 };

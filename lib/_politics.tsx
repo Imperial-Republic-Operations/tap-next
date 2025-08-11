@@ -1,5 +1,7 @@
+'use server'
+
 import { prisma } from '@/lib/prisma';
-import { Prisma } from '@/lib/generated/prisma';
+import { roles, userHasAccess } from "@/lib/roles";
 
 // Senator operations
 export async function getAllSenators() {
@@ -404,23 +406,21 @@ export async function userHasSenateAccess(userId: string) {
     if (!user) return false;
 
     // Admins always have access
-    if (user.role === 'SYSTEM_ADMIN' || user.role === 'ADMIN') return true;
+    if (userHasAccess(roles[5], user)) return true;
 
     // Users with a senator have access
     if (user.senator) return true;
 
     // Users with characters holding senate positions have access
-    const hasSenatePosition = user.characters.some(character => 
-        character.memberships.some(membership => 
-            membership.position && (
-                membership.position.senateSupremeRulerSetting ||
-                membership.position.senatePresidentSetting ||
-                membership.position.senateVicePresidentSetting
-            )
+    return user.characters.some(character =>
+        character.memberships.some(membership =>
+                membership.position && (
+                    membership.position.senateSupremeRulerSetting ||
+                    membership.position.senatePresidentSetting ||
+                    membership.position.senateVicePresidentSetting
+                )
         )
     );
-
-    return hasSenatePosition;
 }
 
 export async function userHasHighCouncilAccess(userId: string) {
@@ -452,32 +452,125 @@ export async function userHasHighCouncilAccess(userId: string) {
     if (!user) return false;
 
     // Admins always have access
-    if (user.role === 'SYSTEM_ADMIN' || user.role === 'ADMIN') return true;
+    if (userHasAccess(roles[5], user)) return true;
 
     // Users with characters holding high council positions have access
-    const hasHighCouncilPosition = user.characters.some(character => 
-        character.memberships.some(membership => 
-            membership.position && (
-                membership.position.hcChairmanSetting ||
-                membership.position.hcViceChairmanSetting ||
-                membership.position.hcCouncilorSetting ||
-                membership.position.hcHonoraryCouncilorSetting
-            )
+    return user.characters.some(character =>
+        character.memberships.some(membership =>
+                membership.position && (
+                    membership.position.hcChairmanSetting ||
+                    membership.position.hcViceChairmanSetting ||
+                    membership.position.hcCouncilorSetting ||
+                    membership.position.hcHonoraryCouncilorSetting
+                )
         )
     );
+}
 
-    return hasHighCouncilPosition;
+// High Council operations
+export async function getHighCouncilData() {
+    const highCouncilSettings = await prisma.highCouncilSettings.findFirst({
+        include: {
+            chairmanPosition: {
+                include: {
+                    organization: true,
+                    members: {
+                        include: {
+                            character: {
+                                include: {
+                                    user: true
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            viceChairmanPosition: {
+                include: {
+                    organization: true,
+                    members: {
+                        include: {
+                            character: {
+                                include: {
+                                    user: true
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            highCouncilorPosition: {
+                include: {
+                    organization: true,
+                    members: {
+                        include: {
+                            character: {
+                                include: {
+                                    user: true
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            honoraryHighCouncilorPosition: {
+                include: {
+                    organization: true,
+                    members: {
+                        include: {
+                            character: {
+                                include: {
+                                    user: true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    if (!highCouncilSettings) return null;
+
+    return {
+        chairman: highCouncilSettings.chairmanPosition.members.map(member => ({
+            id: member.id,
+            character: member.character,
+            position: highCouncilSettings.chairmanPosition,
+            role: 'chairman'
+        }))[0] || null,
+        viceChairman: highCouncilSettings.viceChairmanPosition.members.map(member => ({
+            id: member.id,
+            character: member.character,
+            position: highCouncilSettings.viceChairmanPosition,
+            role: 'viceChairman'
+        }))[0] || null,
+        councilors: highCouncilSettings.highCouncilorPosition.members.map(member => ({
+            id: member.id,
+            character: member.character,
+            position: highCouncilSettings.highCouncilorPosition,
+            role: 'councilor'
+        })),
+        honoraryCouncilors: highCouncilSettings.honoraryHighCouncilorPosition.members.map(member => ({
+            id: member.id,
+            character: member.character,
+            position: highCouncilSettings.honoraryHighCouncilorPosition,
+            role: 'honoraryCouncilor'
+        }))
+    };
 }
 
 // Public data for politics hub
 export async function getPoliticsHubData() {
-    const [senators, committees] = await Promise.all([
+    const [senators, committees, highCouncil] = await Promise.all([
         getAllSenators(),
-        getAllSenateCommittees()
+        getAllSenateCommittees(),
+        getHighCouncilData()
     ]);
 
     return {
         senators,
-        committees
+        committees,
+        highCouncil
     };
 }

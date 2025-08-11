@@ -6,6 +6,7 @@ export type NavigationAccess = { type: 'open' }
     | { type: 'role', role: string }
     | { type: 'team', team: 'character' | 'moderation' | 'force'| 'operations'| 'publication', overrideRole?: string }
     | { type: 'role-and-team', role: string, team: 'character' | 'moderation' | 'force'| 'operations'| 'publication', overrideRole?: string }
+    | { type: 'custom', customAccess: (user: any) => boolean | Promise<boolean>, overrideAccess?: NavigationAccess }
 
 export interface NavigationItem {
     title: string;
@@ -46,6 +47,17 @@ export async function userHasNavigationAccess(access: NavigationAccess, user: an
                 return checkTeams(access.team, user);
             }
             return false;
+        case 'custom':
+            // Check override access first if provided
+            if (access.overrideAccess) {
+                const overrideResult = await userHasNavigationAccess(access.overrideAccess, user);
+                if (overrideResult) {
+                    return true;
+                }
+            }
+            
+            // Execute the custom access function
+            return access.customAccess(user);
     }
 }
 

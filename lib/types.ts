@@ -1057,9 +1057,38 @@ export interface TeamsSettings {
     };
 }
 
+export interface HighCouncilMember {
+    id: string;
+    character: {
+        id: string;
+        name: string;
+        user: {
+            id: string;
+            name: string;
+            username: string;
+        };
+    };
+    position: {
+        id: string;
+        name: string;
+        organization: {
+            id: string;
+            name: string;
+            abbreviation: string;
+        };
+    };
+    role: 'chairman' | 'viceChairman' | 'councilor' | 'honoraryCouncilor';
+}
+
 export interface PoliticsHubData {
     senators: Senator[];
     committees: SenateCommittee[];
+    highCouncil: {
+        chairman: HighCouncilMember | null;
+        viceChairman: HighCouncilMember | null;
+        councilors: HighCouncilMember[];
+        honoraryCouncilors: HighCouncilMember[];
+    } | null;
 }
 
 // Additional supporting types that might be needed

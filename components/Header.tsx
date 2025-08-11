@@ -55,8 +55,35 @@ function getNavigationConfig(t: any): NavigationConfig {
             { title: t.header.inventory, route: "/inventory", exact: false, access: { type: 'role', role: roles[1] }, devOnly: false },
             { title: t.header.map, route: "/map", exact: false, access: { type: 'role', role: roles[1] }, devOnly: false },
             { title: t.header.politics, route: "/politics", exact: false, access: { type: 'role', role: roles[1] }, devOnly: false },
-            // TODO: Add a way to add additional criterion for a link to appear in the header (ex: having an aware force-sensitive character (or the active character being aware of being force-sensitive?))
-            // { title: t.header.map, route: "/force", exact: false, access: { type: 'role', role: roles[1] }, devOnly: false },
+            {
+                title: t.header.force,
+                route: "/force",
+                exact: false,
+                access: {
+                    type: 'custom',
+                    customAccess: async (user) => {
+                        if (!user) return false;
+
+                        const forceAwareCharacters = await prisma.character.count({
+                            where: {
+                                userId: user.id,
+                                forceProfile: {
+                                    aware: true,
+                                },
+                            },
+                        });
+
+                        return forceAwareCharacters > 0;
+                    },
+                    overrideAccess: {
+                        type: 'role-and-team',
+                        role: roles[2],
+                        team: 'force',
+                        overrideRole: roles[5],
+                    },
+                },
+                devOnly: false
+            },
         ],
         dropdown: {
             title: t.header.more,
