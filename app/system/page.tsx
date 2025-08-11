@@ -229,7 +229,7 @@ function SenateSettingsForm({ settings, positions, onSave, saving, saveSuccess }
                 <select
                     value={formData.supremeRulerPositionId}
                     onChange={(e) => setFormData(prev => ({ ...prev, supremeRulerPositionId: e.target.value }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 >
                     <option value="">Select a position...</option>
                     {positions.map((position) => (
@@ -250,7 +250,7 @@ function SenateSettingsForm({ settings, positions, onSave, saving, saveSuccess }
                 <select
                     value={formData.presidentPositionId}
                     onChange={(e) => setFormData(prev => ({ ...prev, presidentPositionId: e.target.value }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 >
                     <option value="">Select a position...</option>
                     {positions.map((position) => (
@@ -271,7 +271,7 @@ function SenateSettingsForm({ settings, positions, onSave, saving, saveSuccess }
                 <select
                     value={formData.vicePresidentPositionId}
                     onChange={(e) => setFormData(prev => ({ ...prev, vicePresidentPositionId: e.target.value }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 >
                     <option value="">Select a position...</option>
                     {positions.map((position) => (
@@ -289,7 +289,7 @@ function SenateSettingsForm({ settings, positions, onSave, saving, saveSuccess }
                 <button
                     type="submit"
                     disabled={saving}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
                 >
                     {saving ? (
                         <>
@@ -353,7 +353,7 @@ function HighCouncilSettingsForm({ settings, positions, onSave, saving, saveSucc
                 <select
                     value={formData.chairmanPositionId}
                     onChange={(e) => setFormData(prev => ({ ...prev, chairmanPositionId: e.target.value }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 >
                     <option value="">Select a position...</option>
                     {positions.map((position) => (
@@ -374,7 +374,7 @@ function HighCouncilSettingsForm({ settings, positions, onSave, saving, saveSucc
                 <select
                     value={formData.viceChairmanPositionId}
                     onChange={(e) => setFormData(prev => ({ ...prev, viceChairmanPositionId: e.target.value }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 >
                     <option value="">Select a position...</option>
                     {positions.map((position) => (
@@ -395,7 +395,7 @@ function HighCouncilSettingsForm({ settings, positions, onSave, saving, saveSucc
                 <select
                     value={formData.highCouncilorPositionId}
                     onChange={(e) => setFormData(prev => ({ ...prev, highCouncilorPositionId: e.target.value }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 >
                     <option value="">Select a position...</option>
                     {positions.map((position) => (
@@ -416,7 +416,7 @@ function HighCouncilSettingsForm({ settings, positions, onSave, saving, saveSucc
                 <select
                     value={formData.honoraryHighCouncilorPositionId}
                     onChange={(e) => setFormData(prev => ({ ...prev, honoraryHighCouncilorPositionId: e.target.value }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 >
                     <option value="">Select a position...</option>
                     {positions.map((position) => (
@@ -434,7 +434,7 @@ function HighCouncilSettingsForm({ settings, positions, onSave, saving, saveSucc
                 <button
                     type="submit"
                     disabled={saving}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
                 >
                     {saving ? (
                         <>
@@ -500,7 +500,7 @@ function TeamsSettingsForm({ settings, teams, onSave, saving, saveSuccess }: {
                 <select
                     value={formData.characterTeamId}
                     onChange={(e) => setFormData(prev => ({ ...prev, characterTeamId: e.target.value }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 >
                     <option value="">Select a team...</option>
                     {teams.map((team) => (
@@ -521,7 +521,7 @@ function TeamsSettingsForm({ settings, teams, onSave, saving, saveSuccess }: {
                 <select
                     value={formData.moderationTeamId}
                     onChange={(e) => setFormData(prev => ({ ...prev, moderationTeamId: e.target.value }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 >
                     <option value="">Select a team...</option>
                     {teams.map((team) => (
@@ -542,7 +542,7 @@ function TeamsSettingsForm({ settings, teams, onSave, saving, saveSuccess }: {
                 <select
                     value={formData.forceTeamId}
                     onChange={(e) => setFormData(prev => ({ ...prev, forceTeamId: e.target.value }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 >
                     <option value="">Select a team...</option>
                     {teams.map((team) => (
@@ -563,7 +563,7 @@ function TeamsSettingsForm({ settings, teams, onSave, saving, saveSuccess }: {
                 <select
                     value={formData.operationsTeamId}
                     onChange={(e) => setFormData(prev => ({ ...prev, operationsTeamId: e.target.value }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 >
                     <option value="">Select a team...</option>
                     {teams.map((team) => (
@@ -584,7 +584,7 @@ function TeamsSettingsForm({ settings, teams, onSave, saving, saveSuccess }: {
                 <select
                     value={formData.publicationTeamId}
                     onChange={(e) => setFormData(prev => ({ ...prev, publicationTeamId: e.target.value }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 >
                     <option value="">Select a team...</option>
                     {teams.map((team) => (
@@ -602,7 +602,7 @@ function TeamsSettingsForm({ settings, teams, onSave, saving, saveSuccess }: {
                 <button
                     type="submit"
                     disabled={saving}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
                 >
                     {saving ? (
                         <>
