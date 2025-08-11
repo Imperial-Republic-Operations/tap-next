@@ -310,6 +310,18 @@ export const planetsApi = {
         apiClient.get('/planets'),
 };
 
+// Positions API
+export const positionsApi = {
+    getAllPositions: () => 
+        apiClient.get('/positions'),
+};
+
+// Teams API
+export const teamsApi = {
+    getAllTeams: () => 
+        apiClient.get('/teams'),
+};
+
 // Dashboard API  
 export const dashboardApi = {
     getStats: (characterId?: bigint, userId?: string) => 

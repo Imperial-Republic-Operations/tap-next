@@ -604,6 +604,21 @@ export async function createSecurityClearance(name: string, tier: number): Promi
     return fetchSecurityClearances();
 }
 
+export async function fetchAllPositions() {
+    return prisma.position.findMany({
+        orderBy: { name: 'asc' },
+        include: {
+            organization: {
+                select: {
+                    id: true,
+                    name: true,
+                    abbreviation: true
+                }
+            }
+        }
+    });
+}
+
 export async function updateSecurityClearanceTier(id: bigint, newTier: number): Promise<SecurityClearanceWithCharacters[]> {
     const currentClearance = await prisma.securityClearance.findUnique({
         where: { id }

@@ -195,3 +195,14 @@ export async function updateUserRole(userId: string, role: string) {
         }
     });
 }
+
+export async function fetchAllTeams() {
+    return prisma.team.findMany({
+        orderBy: { name: 'asc' },
+        select: {
+            id: true,
+            name: true,
+            abbreviation: true
+        }
+    });
+}

@@ -1,14 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { systemApi } from '@/lib/apiClient';
+import { systemApi, positionsApi, teamsApi } from '@/lib/apiClient';
 import { SenateSettings, HighCouncilSettings, TeamsSettings } from '@/lib/types';
-import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { CheckIcon } from '@heroicons/react/24/outline';
 
 export default function SystemSettingsPage() {
     const [senateSettings, setSenateSettings] = useState<SenateSettings | null>(null);
     const [highCouncilSettings, setHighCouncilSettings] = useState<HighCouncilSettings | null>(null);
     const [teamsSettings, setTeamsSettings] = useState<TeamsSettings | null>(null);
+    const [positions, setPositions] = useState<any[]>([]);
+    const [teams, setTeams] = useState<any[]>([]);
     const [loading, setLoading] = useState({
         senate: true,
         highCouncil: true,
@@ -29,15 +31,19 @@ export default function SystemSettingsPage() {
     useEffect(() => {
         const loadSettings = async () => {
             try {
-                const [senateRes, highCouncilRes, teamsRes] = await Promise.all([
+                const [senateRes, highCouncilRes, teamsRes, positionsRes, teamsListRes] = await Promise.all([
                     systemApi.getSenateSettings(),
                     systemApi.getHighCouncilSettings(),
-                    systemApi.getTeamsSettings()
+                    systemApi.getTeamsSettings(),
+                    positionsApi.getAllPositions(),
+                    teamsApi.getAllTeams()
                 ]);
 
                 setSenateSettings(senateRes.data);
                 setHighCouncilSettings(highCouncilRes.data);
                 setTeamsSettings(teamsRes.data);
+                setPositions(positionsRes.data);
+                setTeams(teamsListRes.data);
             } catch (error) {
                 console.error('Failed to load system settings:', error);
             } finally {
@@ -112,6 +118,7 @@ export default function SystemSettingsPage() {
                     ) : (
                         <SenateSettingsForm
                             settings={senateSettings}
+                            positions={positions}
                             onSave={handleSaveSenate}
                             saving={saving.senate}
                             saveSuccess={saveSuccess.senate}
@@ -141,6 +148,7 @@ export default function SystemSettingsPage() {
                     ) : (
                         <HighCouncilSettingsForm
                             settings={highCouncilSettings}
+                            positions={positions}
                             onSave={handleSaveHighCouncil}
                             saving={saving.highCouncil}
                             saveSuccess={saveSuccess.highCouncil}
@@ -171,6 +179,7 @@ export default function SystemSettingsPage() {
                     ) : (
                         <TeamsSettingsForm
                             settings={teamsSettings}
+                            teams={teams}
                             onSave={handleSaveTeams}
                             saving={saving.teams}
                             saveSuccess={saveSuccess.teams}
@@ -183,8 +192,9 @@ export default function SystemSettingsPage() {
 }
 
 // Senate Settings Form Component
-function SenateSettingsForm({ settings, onSave, saving, saveSuccess }: {
+function SenateSettingsForm({ settings, positions, onSave, saving, saveSuccess }: {
     settings: SenateSettings | null;
+    positions: any[];
     onSave: (data: any) => void;
     saving: boolean;
     saveSuccess: boolean;
@@ -216,7 +226,19 @@ function SenateSettingsForm({ settings, onSave, saving, saveSuccess }: {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Supreme Ruler Position
                 </label>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <select
+                    value={formData.supremeRulerPositionId}
+                    onChange={(e) => setFormData(prev => ({ ...prev, supremeRulerPositionId: e.target.value }))}
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                    <option value="">Select a position...</option>
+                    {positions.map((position) => (
+                        <option key={position.id} value={position.id.toString()}>
+                            {position.name} ({position.organization.abbreviation})
+                        </option>
+                    ))}
+                </select>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Current: {settings?.supremeRulerPosition.name} ({settings?.supremeRulerPosition.organization.abbreviation})
                 </div>
             </div>
@@ -225,7 +247,19 @@ function SenateSettingsForm({ settings, onSave, saving, saveSuccess }: {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     President Position
                 </label>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <select
+                    value={formData.presidentPositionId}
+                    onChange={(e) => setFormData(prev => ({ ...prev, presidentPositionId: e.target.value }))}
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                    <option value="">Select a position...</option>
+                    {positions.map((position) => (
+                        <option key={position.id} value={position.id.toString()}>
+                            {position.name} ({position.organization.abbreviation})
+                        </option>
+                    ))}
+                </select>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Current: {settings?.presidentPosition.name} ({settings?.presidentPosition.organization.abbreviation})
                 </div>
             </div>
@@ -234,7 +268,19 @@ function SenateSettingsForm({ settings, onSave, saving, saveSuccess }: {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Vice President Position
                 </label>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <select
+                    value={formData.vicePresidentPositionId}
+                    onChange={(e) => setFormData(prev => ({ ...prev, vicePresidentPositionId: e.target.value }))}
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                    <option value="">Select a position...</option>
+                    {positions.map((position) => (
+                        <option key={position.id} value={position.id.toString()}>
+                            {position.name} ({position.organization.abbreviation})
+                        </option>
+                    ))}
+                </select>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Current: {settings?.vicePresidentPosition.name} ({settings?.vicePresidentPosition.organization.abbreviation})
                 </div>
             </div>
@@ -268,8 +314,9 @@ function SenateSettingsForm({ settings, onSave, saving, saveSuccess }: {
 }
 
 // High Council Settings Form Component
-function HighCouncilSettingsForm({ settings, onSave, saving, saveSuccess }: {
+function HighCouncilSettingsForm({ settings, positions, onSave, saving, saveSuccess }: {
     settings: HighCouncilSettings | null;
+    positions: any[];
     onSave: (data: any) => void;
     saving: boolean;
     saveSuccess: boolean;
@@ -303,7 +350,19 @@ function HighCouncilSettingsForm({ settings, onSave, saving, saveSuccess }: {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Chairman Position
                 </label>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <select
+                    value={formData.chairmanPositionId}
+                    onChange={(e) => setFormData(prev => ({ ...prev, chairmanPositionId: e.target.value }))}
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                    <option value="">Select a position...</option>
+                    {positions.map((position) => (
+                        <option key={position.id} value={position.id.toString()}>
+                            {position.name} ({position.organization.abbreviation})
+                        </option>
+                    ))}
+                </select>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Current: {settings?.chairmanPosition.name} ({settings?.chairmanPosition.organization.abbreviation})
                 </div>
             </div>
@@ -312,7 +371,19 @@ function HighCouncilSettingsForm({ settings, onSave, saving, saveSuccess }: {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Vice Chairman Position
                 </label>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <select
+                    value={formData.viceChairmanPositionId}
+                    onChange={(e) => setFormData(prev => ({ ...prev, viceChairmanPositionId: e.target.value }))}
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                    <option value="">Select a position...</option>
+                    {positions.map((position) => (
+                        <option key={position.id} value={position.id.toString()}>
+                            {position.name} ({position.organization.abbreviation})
+                        </option>
+                    ))}
+                </select>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Current: {settings?.viceChairmanPosition.name} ({settings?.viceChairmanPosition.organization.abbreviation})
                 </div>
             </div>
@@ -321,7 +392,19 @@ function HighCouncilSettingsForm({ settings, onSave, saving, saveSuccess }: {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     High Councilor Position
                 </label>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <select
+                    value={formData.highCouncilorPositionId}
+                    onChange={(e) => setFormData(prev => ({ ...prev, highCouncilorPositionId: e.target.value }))}
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                    <option value="">Select a position...</option>
+                    {positions.map((position) => (
+                        <option key={position.id} value={position.id.toString()}>
+                            {position.name} ({position.organization.abbreviation})
+                        </option>
+                    ))}
+                </select>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Current: {settings?.highCouncilorPosition.name} ({settings?.highCouncilorPosition.organization.abbreviation})
                 </div>
             </div>
@@ -330,7 +413,19 @@ function HighCouncilSettingsForm({ settings, onSave, saving, saveSuccess }: {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Honorary High Councilor Position
                 </label>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <select
+                    value={formData.honoraryHighCouncilorPositionId}
+                    onChange={(e) => setFormData(prev => ({ ...prev, honoraryHighCouncilorPositionId: e.target.value }))}
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                    <option value="">Select a position...</option>
+                    {positions.map((position) => (
+                        <option key={position.id} value={position.id.toString()}>
+                            {position.name} ({position.organization.abbreviation})
+                        </option>
+                    ))}
+                </select>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Current: {settings?.honoraryHighCouncilorPosition.name} ({settings?.honoraryHighCouncilorPosition.organization.abbreviation})
                 </div>
             </div>
@@ -364,8 +459,9 @@ function HighCouncilSettingsForm({ settings, onSave, saving, saveSuccess }: {
 }
 
 // Teams Settings Form Component
-function TeamsSettingsForm({ settings, onSave, saving, saveSuccess }: {
+function TeamsSettingsForm({ settings, teams, onSave, saving, saveSuccess }: {
     settings: TeamsSettings | null;
+    teams: any[];
     onSave: (data: any) => void;
     saving: boolean;
     saveSuccess: boolean;
@@ -401,7 +497,19 @@ function TeamsSettingsForm({ settings, onSave, saving, saveSuccess }: {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Character Team
                 </label>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <select
+                    value={formData.characterTeamId}
+                    onChange={(e) => setFormData(prev => ({ ...prev, characterTeamId: e.target.value }))}
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                    <option value="">Select a team...</option>
+                    {teams.map((team) => (
+                        <option key={team.id} value={team.id.toString()}>
+                            {team.name} ({team.abbreviation})
+                        </option>
+                    ))}
+                </select>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Current: {settings?.characterTeam.name} ({settings?.characterTeam.abbreviation})
                 </div>
             </div>
@@ -410,7 +518,19 @@ function TeamsSettingsForm({ settings, onSave, saving, saveSuccess }: {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Moderation Team
                 </label>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <select
+                    value={formData.moderationTeamId}
+                    onChange={(e) => setFormData(prev => ({ ...prev, moderationTeamId: e.target.value }))}
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                    <option value="">Select a team...</option>
+                    {teams.map((team) => (
+                        <option key={team.id} value={team.id.toString()}>
+                            {team.name} ({team.abbreviation})
+                        </option>
+                    ))}
+                </select>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Current: {settings?.moderationTeam.name} ({settings?.moderationTeam.abbreviation})
                 </div>
             </div>
@@ -419,7 +539,19 @@ function TeamsSettingsForm({ settings, onSave, saving, saveSuccess }: {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Force Team
                 </label>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <select
+                    value={formData.forceTeamId}
+                    onChange={(e) => setFormData(prev => ({ ...prev, forceTeamId: e.target.value }))}
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                    <option value="">Select a team...</option>
+                    {teams.map((team) => (
+                        <option key={team.id} value={team.id.toString()}>
+                            {team.name} ({team.abbreviation})
+                        </option>
+                    ))}
+                </select>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Current: {settings?.forceTeam.name} ({settings?.forceTeam.abbreviation})
                 </div>
             </div>
@@ -428,7 +560,19 @@ function TeamsSettingsForm({ settings, onSave, saving, saveSuccess }: {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Operations Team
                 </label>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <select
+                    value={formData.operationsTeamId}
+                    onChange={(e) => setFormData(prev => ({ ...prev, operationsTeamId: e.target.value }))}
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                    <option value="">Select a team...</option>
+                    {teams.map((team) => (
+                        <option key={team.id} value={team.id.toString()}>
+                            {team.name} ({team.abbreviation})
+                        </option>
+                    ))}
+                </select>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Current: {settings?.operationsTeam.name} ({settings?.operationsTeam.abbreviation})
                 </div>
             </div>
@@ -437,7 +581,19 @@ function TeamsSettingsForm({ settings, onSave, saving, saveSuccess }: {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Publication Team
                 </label>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <select
+                    value={formData.publicationTeamId}
+                    onChange={(e) => setFormData(prev => ({ ...prev, publicationTeamId: e.target.value }))}
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                    <option value="">Select a team...</option>
+                    {teams.map((team) => (
+                        <option key={team.id} value={team.id.toString()}>
+                            {team.name} ({team.abbreviation})
+                        </option>
+                    ))}
+                </select>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Current: {settings?.publicationTeam.name} ({settings?.publicationTeam.abbreviation})
                 </div>
             </div>
