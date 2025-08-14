@@ -162,7 +162,7 @@ export async function getNavigationItems(
   
   for (const item of navigationItems) {
     const hasAccess = await userHasNavigationAccess(item, user);
-    const showInEnv = (!item.devOnly) || (item.devOnly && process.env.NODE_ENV !== "production");
+    const showInEnv = (!item.devOnly) || (item.devOnly && process.env.ENVIRONMENT !== "production");
     
     if (hasAccess && showInEnv) {
       // Remove sensitive fields before sending to client
