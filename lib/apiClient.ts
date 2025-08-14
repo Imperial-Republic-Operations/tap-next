@@ -320,6 +320,15 @@ export const positionsApi = {
 export const teamsApi = {
     getAllTeams: () => 
         apiClient.get('/teams'),
+    
+    getUserTeams: (userId: string) =>
+        apiClient.get(`/teams/user/${userId}`),
+    
+    addUserToTeam: (userId: string, teamId: string) =>
+        apiClient.post('/teams/members', { userId, teamId }),
+    
+    removeUserFromTeam: (userId: string, teamId: string) =>
+        apiClient.delete(`/teams/members`, { data: { userId, teamId } }),
 };
 
 // Dashboard API  
@@ -390,6 +399,12 @@ export const mapApi = {
     
     updatePlanet: (id: bigint, data: { name?: string; x?: number; y?: number; radius?: number; color?: string; habitable?: boolean; forceProbabilityModifier?: number }) => 
         apiClient.put(`/map/planets/${id}`, data),
+};
+
+// Navigation API
+export const navigationApi = {
+    generateBreadcrumbs: (path: string, params: Record<string, string> = {}) =>
+        apiClient.post('/breadcrumbs', { path, params }),
 };
 
 export default apiClient;

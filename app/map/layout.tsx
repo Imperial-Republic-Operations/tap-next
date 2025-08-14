@@ -1,26 +1,28 @@
-'use client';
-
 import React from "react";
-import { roles } from "@/lib/roles";
-import { useSession } from "next-auth/react";
-import CollapsibleSidebar from "@/components/CollapsibleSidebar";
-import { NavigationItem } from "@/lib/navigation";
+import { getSession } from "@/lib/auth";
+import { getNavigationItems } from "@/lib/navigationDB";
+import { NavigationLocation } from "@/lib/generated/prisma";
+import Sidebar from "@/components/Sidebar";
 
-export default function MapLayout({
+export default async function MapLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const { data: session } = useSession();
+    const { session } = await getSession();
 
-    const navigationLinks: NavigationItem[] = [
-        { title: "Galaxy Map", path: "/map", exact: true, access: { type: 'role', role: roles[1] } },
-        { title: "Map Editor", path: "/map/edit", exact: false, access: { type: 'role-and-team', role: roles[4], team: 'moderation', overrideRole: roles[6] } }
-    ];
+    const headerNavigation = await getNavigationItems(NavigationLocation.HEADER_MAIN, session?.user);
+    const parentItem = headerNavigation.find(item => item.path === '/map');
+
+    const sidebarNavigation = await getNavigationItems(
+        NavigationLocation.SIDEBAR,
+        session?.user,
+        parentItem ? parentItem.id.toString() : undefined
+    );
 
     return(
         <div className="flex">
-            <CollapsibleSidebar navigation={navigationLinks} session={session} />
+            <Sidebar navigation={sidebarNavigation} session={session} parentItem={parentItem} />
             <div className="sidebar-content flex-1 self-start overflow-y-auto mt-5 pl-75 pr-5">
                 {children}
             </div>

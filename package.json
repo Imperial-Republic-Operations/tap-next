@@ -23,6 +23,7 @@
     "@bbob/preset-html5": "^4.2.0",
     "@headlessui/react": "^2.2.4",
     "@heroicons/react": "^2.2.0",
+    "@prisma-fmt/cli": "^1.1.1",
     "@prisma/client": "^6.13.0",
     "@types/d3": "^7.4.3",
     "axios": "1.11.0",

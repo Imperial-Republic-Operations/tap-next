@@ -1,47 +1,11 @@
 'use client'
 
-import { getBreadcrumbTitle, getBreadcrumbTitleByType } from "@/lib/title";
 import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
-import { useIsNotFound } from "@/contexts/NotFoundContext";
+import { useParams, usePathname } from 'next/navigation';
 import Link from "next/link";
 import { useAppTime } from "@/hooks/useAppTime";
 import { useFormatting } from '@/hooks/useFormatting';
-
-function isNumeric(value: string): boolean {
-    return /^\d+$/.test(value);
-}
-
-function isType(base: string, value: string): boolean {
-    const types: { [key: string]: string[] } = {
-        "documents": ["game", "organization", "personal"],
-    };
-    return types[base] ? types[base].includes(value.toLowerCase()) : false;
-}
-
-function isKeyword(value: string): boolean {
-    const keywords = ["edit", "view"];
-    return keywords.includes(value.toLowerCase());
-}
-
-function getPathPrefix(keyword: string, t: any): string {
-    switch (keyword.toLowerCase()) {
-        case "edit":
-            return t.breadcrumb.editing;
-        case "view":
-            return t.breadcrumb.viewing;
-        default:
-            return "";
-    }
-}
-
-function titleCase(str: string): string {
-    return str
-        .toLowerCase()
-        .split(" ")
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
-}
+import { navigationApi } from '@/lib/apiClient';
 
 interface StaticDateInfo {
     gameMonth: string;
@@ -50,14 +14,18 @@ interface StaticDateInfo {
     day: number;
 }
 
-// export default function Breadcrumb({ inGameDate }: { inGameDate: string }) {
+interface BreadcrumbItem {
+    title: string;
+    path: string;
+}
+
 export default function Breadcrumb({ staticDateInfo }: { staticDateInfo: StaticDateInfo }) {
     const pathname = usePathname();
-    const isNotFoundPage = useIsNotFound();
+    const params = useParams();
     const { getAppTime } = useAppTime();
     const { formatTimeSeconds, t } = useFormatting();
 
-    const [pages, setPages] = useState<{ name: string, path: string }[]>([]);
+    const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
     const [currentTime, setCurrentTime] = useState<string>('');
 
     useEffect(() => {
@@ -73,75 +41,42 @@ export default function Breadcrumb({ staticDateInfo }: { staticDateInfo: StaticD
     }, [getAppTime]);
 
     useEffect(() => {
-        const generatePages = async () => {
-            const segments = pathname.substring(1).split('/');
-            const pagesList: {name: string, path: string}[] = [];
-            let path = "";
-
-            if (pathname === '/') return;
-
-            for (let i = 0; i < segments.length; i++) {
-                const segment = segments[i];
-                path += `/${segment}`;
-
-                if (isKeyword(segment)) {
-                    const keyword = segment;
-                    const base = segments[0]?.toLowerCase();
-                    const prefix = getPathPrefix(keyword, t);
-
-                    if (i +2 < segments.length && isType(base, segments[i + 1]) && isNumeric(segments[i + 2])) {
-                        const type = segments[i + 1];
-                        const id = BigInt(segments[i + 2]);
-                        path += `/${type}/${id}`;
-
-                        const title = await getBreadcrumbTitleByType(base, type, id);
-                        pagesList.push({name: prefix ? `${prefix} ${title}` : title, path});
-                        i += 2;
-                    } else if (i + 1 < segments.length && isNumeric(segments[i + 1])) {
-                        const id = BigInt(segments[i + 1]);
-                        path += `/${id}`;
-
-                        const title = await getBreadcrumbTitle(base, id);
-                        pagesList.push({name: prefix ? `${prefix} ${title}` : title, path});
-                        i++;
-                    } else {
-                        if (base === 'map') pagesList.push({name: prefix ? `${prefix} Galaxy Map` : 'Galaxy Map', path});
-                    }
-                } else if (isNumeric(segment)) {
-                    const base = segments[i - 1] ? segments[i - 1].toLowerCase() : "";
-                    const title = await getBreadcrumbTitle(base, BigInt(segment));
-                    pagesList.push({name: title, path})
-                } else if (segment === "new" || segment === "create") {
-                    let name = t.breadcrumb.creating;
-                    switch (segments[i - 1]) {
-                        case "characters":
-                            name += ` ${t.breadcrumb.character}`;
-                            break;
-                        case "organizations":
-                            name += ` ${t.breadcrumb.organization}`;
-                            break;
-                        default:
-                            name += "...";
-                    }
-                    pagesList.push({name: titleCase(name), path});
-                } else if (segment === "pending") {
-                    pagesList.push({name: titleCase(`${t.breadcrumb.pending} ${segments[i - 1]}`), path});
-                } else {
-                    pagesList.push({ name: titleCase(segment.replaceAll("-", " ")), path });
-                }
+        const generateBreadcrumbs = async () => {
+            if (pathname === '/') {
+                setBreadcrumbs([]);
+                return;
             }
 
-            setPages(pagesList);
+            try {
+                // Convert route params to string record for API call
+                const routeParams: Record<string, string> = {};
+                if (params) {
+                    Object.entries(params).forEach(([key, value]) => {
+                        if (typeof value === 'string') {
+                            routeParams[key] = value;
+                        } else if (Array.isArray(value)) {
+                            routeParams[key] = value[0] || '';
+                        }
+                    });
+                }
+
+                // Use the proper API client instead of raw fetch
+                const response = await navigationApi.generateBreadcrumbs(pathname, routeParams);
+                setBreadcrumbs(response.data.breadcrumbs || []);
+            } catch (error) {
+                console.error('Error generating breadcrumbs:', error);
+                setBreadcrumbs([]);
+            }
         };
 
-        generatePages();
-    }, [pathname, isNotFoundPage]);
+        generateBreadcrumbs();
+    }, [pathname, params]);
 
     useEffect(() => {
-        const currentPageIndex = pages.length - 1;
-        const title = currentPageIndex >= 0 ? pages[currentPageIndex].name : "Home";
-        document.title = `${title} | Terminal Access Project`
-    }, [pages]);
+        // Update document title based on current page
+        const currentPageTitle = breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1].title : "Home";
+        document.title = `${currentPageTitle} | Terminal Access Project`;
+    }, [breadcrumbs]);
 
     const inGameDate = `${staticDateInfo.gameMonth} ${staticDateInfo.day}, ${staticDateInfo.gameYear} ${staticDateInfo.era} ${currentTime}`;
 
@@ -162,16 +97,16 @@ export default function Breadcrumb({ staticDateInfo }: { staticDateInfo: StaticD
                         </Link>
                     </div>
                 </li>
-                {pages.map((page, i) => (
-                    <li key={page.name} className="flex">
+                {breadcrumbs.map((crumb, i) => (
+                    <li key={`${crumb.path}-${i}`} className="flex">
                         <div className="flex items-center">
                             <svg className="h-full w-6 shrink-0 text-gray-200 dark:text-gray-500" viewBox="0 0 24 44"
                                  preserveAspectRatio="none" fill="currentColor" aria-hidden="true">
                                 <path d="M.293 0l22 22-22 22h1.414l22-22-22-22H.293z"/>
                             </svg>
-                            <a href={i !== pages.length - 1 ? page.path : "#"}
+                            <a href={i !== breadcrumbs.length - 1 ? crumb.path : "#"}
                                className="ml-4 text-sm font-medium text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
-                                {page.name}
+                                {crumb.title}
                             </a>
                         </div>
                     </li>

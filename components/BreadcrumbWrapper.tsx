@@ -1,6 +1,6 @@
-import Breadcrumb from "@/components/Breadcrumb";
 import { fetchCurrentYear, fetchMonth } from "@/lib/_calendar";
 import { useAppTime } from "@/hooks/useAppTime";
+import Breadcrumb from "@/components/Breadcrumb";
 
 export default async function BreadcrumbWrapper() {
     const { getAppTime } = useAppTime();
@@ -9,9 +9,7 @@ export default async function BreadcrumbWrapper() {
     const monthName = today.toLocaleString('default', { month: 'long' });
     const month = await fetchMonth(monthName);
     const year = await fetchCurrentYear();
-    // const time = `${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
 
-    // const date = `${month!.gameMonth} ${day}, ${year!.gameYear} ${year!.era} ${time}`;
     const staticDateInfo = {
         gameMonth: month!.gameMonth,
         gameYear: year!.gameYear,
@@ -19,6 +17,5 @@ export default async function BreadcrumbWrapper() {
         day
     };
 
-    // return <Breadcrumb inGameDate={date} />
     return <Breadcrumb staticDateInfo={staticDateInfo} />
 }

@@ -1223,6 +1223,67 @@ model Notification {
   @@map("notifications")
 }
 
+// Navigation
+model NavigationItem {
+  id                       BigInt             @id @default(autoincrement())
+  titleKey                 String?
+  title                    String
+  path                     String             @unique
+  exact                    Boolean            @default(false)
+  location                 NavigationLocation
+  dropdownSection          DropdownSection?
+  orderIndex               Int                @default(0)
+  accessType               NavigationAccessType
+  accessRole               Role?
+  accessTeam               TeamType?
+  accessOverrideRole       Role?
+  customAccessFunction     String?
+  badgeSource              String?
+  breadcrumbResolver       String?
+  useDashboardTitle        Boolean            @default(true)
+  devOnly                  Boolean            @default(false)
+  active                   Boolean            @default(true)
+
+  parentId                 BigInt?
+  parent                   NavigationItem?    @relation("NavigationHierarchy", fields: [parentId], references: [id])
+
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
+
+  children                 NavigationItem[]   @relation("NavigationHierarchy")
+
+  @@map("navigation_items")
+}
+
+enum NavigationLocation {
+  HEADER_MAIN
+  HEADER_DROPDOWN
+  SIDEBAR
+  BREADCRUMB_ONLY
+}
+
+enum DropdownSection {
+  REFERENCES
+  ADMINISTRATION
+}
+
+enum NavigationAccessType {
+  OPEN
+  AUTHENTICATED
+  ROLE
+  TEAM
+  ROLE_AND_TEAM
+  CUSTOM
+}
+
+enum TeamType {
+  CHARACTER
+  MODERATION
+  FORCE
+  OPERATIONS
+  PUBLICATION
+}
+
 // System Settings
 model TeamsSettings {
   id Int @id @default(1)

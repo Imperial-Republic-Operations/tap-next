@@ -1,23 +1,28 @@
 import React from "react";
 import { getSession } from "@/lib/auth";
-import CollapsibleSidebar from "@/components/CollapsibleSidebar";
-import { NavigationItem } from "@/lib/navigation";
-
-const navigationLinks: NavigationItem[] = [
-    { title: "Dashboard", path: "/documents", exact: true, access: { type: 'open' } },
-];
+import { getNavigationItems } from "@/lib/navigationDB";
+import { NavigationLocation } from "@/lib/generated/prisma";
+import Sidebar from "@/components/Sidebar";
 
 export default async function DocumentLayout({
                                        children,
                                    }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const {session} = await getSession();
+    const { session } = await getSession();
+
+    const headerNavigation = await getNavigationItems(NavigationLocation.HEADER_MAIN, session?.user);
+    const parentItem = headerNavigation.find(item => item.path === '/documents');
+
+    const sidebarNavigation = await getNavigationItems(
+        NavigationLocation.SIDEBAR,
+        session?.user,
+        parentItem ? parentItem.id.toString() : undefined
+    );
 
     return(
         <div className="flex">
-            {/*<Sidebar navigation={navigationLinks} />*/}
-            <CollapsibleSidebar navigation={navigationLinks} session={session} />
+            <Sidebar navigation={sidebarNavigation} session={session} parentItem={parentItem} />
             <div className="sidebar-content flex-1 self-start overflow-y-auto mt-5 pl-75 pr-5">
                 {children}
             </div>

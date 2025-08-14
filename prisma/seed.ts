@@ -1,13 +1,13 @@
 import {
     Alignment,
-    CharacterStatus, DomainRank,
+    CharacterStatus, DomainRank, DropdownSection,
     Era,
     ForceLevel,
-    Gender, HonoraryTitle,
+    Gender, HonoraryTitle, NavigationAccessType, NavigationLocation,
     OrganizationType,
     Permission,
     PrismaClient, RankTier,
-    RealMonth
+    RealMonth, Role, TeamType
 } from "../lib/generated/prisma"; // Do not shorten
 
 const prisma = new PrismaClient();
@@ -4128,6 +4128,534 @@ async function main() {
     //endregion
 
     //region Award Tiers
+    //endregion
+    //endregion
+
+    console.log('🧭 Seeding Navigation Items...');
+    //region Navigation Items
+    //region Breadcrumb Only - Base Routes
+    const notifications = await prisma.navigationItem.upsert({
+        where: {
+            path: '/notifications',
+        },
+        update: {},
+        create: {
+            titleKey: 'navigation.notifications',
+            title: 'Notifications',
+            path: '/notifications',
+            exact: false,
+            location: NavigationLocation.BREADCRUMB_ONLY,
+            accessType: NavigationAccessType.AUTHENTICATED,
+        },
+    });
+
+    const profile = await prisma.navigationItem.upsert({
+        where: {
+            path: '/profile',
+        },
+        update: {},
+        create: {
+            titleKey: 'header.profile',
+            title: 'Profile',
+            path: '/profile',
+            exact: false,
+            location: NavigationLocation.BREADCRUMB_ONLY,
+            accessType: NavigationAccessType.AUTHENTICATED,
+        },
+    });
+
+    const settings = await prisma.navigationItem.upsert({
+        where: {
+            path: '/settings',
+        },
+        update: {},
+        create: {
+            titleKey: 'header.settings',
+            title: 'Settings',
+            path: '/settings',
+            exact: false,
+            location: NavigationLocation.BREADCRUMB_ONLY,
+            accessType: NavigationAccessType.AUTHENTICATED,
+        },
+    });
+    //endregion
+
+    //region Main Header
+    const home = await prisma.navigationItem.upsert({
+        where: {
+            path: '/',
+        },
+        update: {},
+        create: {
+            titleKey: 'header.home',
+            title: 'Home',
+            path: '/',
+            exact: true,
+            location: NavigationLocation.HEADER_MAIN,
+            orderIndex: 0,
+            accessType: NavigationAccessType.OPEN,
+        },
+    });
+
+    const characters = await prisma.navigationItem.upsert({
+        where: {
+            path: '/characters',
+        },
+        update: {},
+        create: {
+            titleKey: 'header.characters',
+            title: 'Characters',
+            path: '/characters',
+            exact: false,
+            location: NavigationLocation.HEADER_MAIN,
+            orderIndex: 1,
+            accessType: NavigationAccessType.AUTHENTICATED,
+        },
+    });
+
+    const organizations = await prisma.navigationItem.upsert({
+        where: {
+            path: '/organizations',
+        },
+        update: {},
+        create: {
+            titleKey: 'header.organizations',
+            title: 'Organizations',
+            path: '/organizations',
+            exact: false,
+            location: NavigationLocation.HEADER_MAIN,
+            orderIndex: 2,
+            accessType: NavigationAccessType.OPEN,
+        },
+    });
+
+    const documents = await prisma.navigationItem.upsert({
+        where: {
+            path: '/documents',
+        },
+        update: {},
+        create: {
+            titleKey: 'header.documents',
+            title: 'Documents',
+            path: '/documents',
+            exact: false,
+            location: NavigationLocation.HEADER_MAIN,
+            orderIndex: 3,
+            accessType: NavigationAccessType.OPEN,
+        },
+    });
+
+    const inventory = await prisma.navigationItem.upsert({
+        where: {
+            path: '/inventory',
+        },
+        update: {},
+        create: {
+            titleKey: 'header.inventory',
+            title: 'Inventory',
+            path: '/inventory',
+            exact: false,
+            location: NavigationLocation.HEADER_MAIN,
+            orderIndex: 4,
+            accessType: NavigationAccessType.AUTHENTICATED,
+        },
+    });
+
+    const map = await prisma.navigationItem.upsert({
+        where: {
+            path: '/map',
+        },
+        update: {},
+        create: {
+            titleKey: 'header.map',
+            title: 'Galaxy Map',
+            path: '/map',
+            exact: false,
+            location: NavigationLocation.HEADER_MAIN,
+            orderIndex: 5,
+            accessType: NavigationAccessType.AUTHENTICATED,
+            useDashboardTitle: false,
+        },
+    });
+
+    const politics = await prisma.navigationItem.upsert({
+        where: {
+            path: '/politics',
+        },
+        update: {},
+        create: {
+            titleKey: 'header.politics',
+            title: 'Politics',
+            path: '/politics',
+            exact: false,
+            location: NavigationLocation.HEADER_MAIN,
+            orderIndex: 6,
+            accessType: NavigationAccessType.AUTHENTICATED,
+        },
+    });
+
+    const force = await prisma.navigationItem.upsert({
+        where: {
+            path: '/force',
+        },
+        update: {},
+        create: {
+            titleKey: 'header.force',
+            title: 'The Force',
+            path: '/force',
+            exact: false,
+            location: NavigationLocation.HEADER_MAIN,
+            orderIndex: 7,
+            accessType: NavigationAccessType.CUSTOM,
+            customAccessFunction: 'forceAwareCharacters',
+            accessRole: Role.STAFF,
+            accessTeam: TeamType.FORCE,
+            accessOverrideRole: Role.ADMIN,
+        },
+    });
+    //endregion
+
+    //region Header Dropdown - References
+    const rules = await prisma.navigationItem.upsert({
+        where: {
+            path: '/rules',
+        },
+        update: {},
+        create: {
+            titleKey: 'header.rules',
+            title: 'Rules',
+            path: '/rules',
+            exact: false,
+            location: NavigationLocation.HEADER_DROPDOWN,
+            dropdownSection: DropdownSection.REFERENCES,
+            orderIndex: 0,
+            accessType: NavigationAccessType.OPEN,
+        },
+    });
+
+    const staff = await prisma.navigationItem.upsert({
+        where: {
+            path: '/staff',
+        },
+        update: {},
+        create: {
+            titleKey: 'header.staff',
+            title: 'Staff',
+            path: '/staff',
+            exact: false,
+            location: NavigationLocation.HEADER_DROPDOWN,
+            dropdownSection: DropdownSection.REFERENCES,
+            orderIndex: 1,
+            accessType: NavigationAccessType.OPEN,
+        },
+    });
+
+    const patchNotes = await prisma.navigationItem.upsert({
+        where: {
+            path: '/patch-notes',
+        },
+        update: {},
+        create: {
+            titleKey: 'header.patchNotes',
+            title: 'Patch Notes',
+            path: '/patch-notes',
+            exact: false,
+            location: NavigationLocation.HEADER_DROPDOWN,
+            dropdownSection: DropdownSection.REFERENCES,
+            orderIndex: 2,
+            accessType: NavigationAccessType.OPEN,
+        },
+    });
+    //endregion
+
+    //region Header Dropdown - Administration
+    const users = await prisma.navigationItem.upsert({
+        where: {
+            path: '/users',
+        },
+        update: {},
+        create: {
+            titleKey: 'header.userAdministration',
+            title: 'User Administration',
+            path: '/users',
+            exact: false,
+            location: NavigationLocation.HEADER_DROPDOWN,
+            dropdownSection: DropdownSection.ADMINISTRATION,
+            orderIndex: 0,
+            accessType: NavigationAccessType.ROLE,
+            accessRole: Role.ASSISTANT_ADMIN,
+        },
+    });
+
+    const calendar = await prisma.navigationItem.upsert({
+        where: {
+            path: '/calendar',
+        },
+        update: {},
+        create: {
+            titleKey: 'header.calendarSettings',
+            title: 'Calendar Settings',
+            path: '/calendar',
+            exact: false,
+            location: NavigationLocation.HEADER_DROPDOWN,
+            dropdownSection: DropdownSection.ADMINISTRATION,
+            orderIndex: 1,
+            accessType: NavigationAccessType.ROLE,
+            accessRole: Role.GAME_MODERATOR,
+        },
+    });
+
+    const system = await prisma.navigationItem.upsert({
+        where: {
+            path: '/system',
+        },
+        update: {},
+        create: {
+            titleKey: 'header.systemSettings',
+            title: 'System Settings',
+            path: '/system',
+            exact: false,
+            location: NavigationLocation.HEADER_DROPDOWN,
+            dropdownSection: DropdownSection.ADMINISTRATION,
+            orderIndex: 2,
+            accessType: NavigationAccessType.ROLE,
+            accessRole: Role.SYSTEM_ADMIN,
+        },
+    });
+
+    const notificationsTest = await prisma.navigationItem.upsert({
+        where: {
+            path: '/notifications/test',
+        },
+        update: {},
+        create: {
+            titleKey: 'header.notificationsTest',
+            title: 'Notifications Test',
+            path: '/notifications/test',
+            exact: false,
+            location: NavigationLocation.HEADER_DROPDOWN,
+            dropdownSection: DropdownSection.ADMINISTRATION,
+            orderIndex: 3,
+            accessType: NavigationAccessType.ROLE,
+            accessRole: Role.SYSTEM_ADMIN,
+            devOnly: true,
+            parentId: notifications.id,
+        },
+    });
+
+    const worklog = await prisma.navigationItem.upsert({
+        where: {
+            path: '/worklog',
+        },
+        update: {},
+        create: {
+            titleKey: 'header.worklog',
+            title: 'Development Worklog',
+            path: '/worklog',
+            exact: false,
+            location: NavigationLocation.HEADER_DROPDOWN,
+            dropdownSection: DropdownSection.ADMINISTRATION,
+            orderIndex: 4,
+            accessType: NavigationAccessType.TEAM,
+            accessTeam: TeamType.OPERATIONS,
+            accessOverrideRole: Role.SYSTEM_ADMIN,
+            devOnly: true,
+        },
+    });
+    //endregion
+
+    //region Sidebar - Characters
+    const characterApproval = await prisma.navigationItem.upsert({
+        where: {
+            path: '/characters/pending',
+        },
+        update: {},
+        create: {
+            title: 'Approval Queue',
+            path: '/characters/pending',
+            exact: false,
+            location: NavigationLocation.SIDEBAR,
+            orderIndex: 1,
+            accessType: NavigationAccessType.ROLE_AND_TEAM,
+            accessRole: Role.GAME_MODERATOR,
+            accessTeam: TeamType.CHARACTER,
+            accessOverrideRole: Role.ADMIN,
+            badgeSource: 'pending_characters',
+            parentId: characters.id,
+        },
+    });
+    //endregion
+
+    //region Sidebar - Organizations
+    const securityClearances = await prisma.navigationItem.upsert({
+        where: {
+            path: '/organizations/security-clearances',
+        },
+        update: {},
+        create: {
+            title: 'Security Clearances',
+            path: '/organizations/security-clearances',
+            exact: true,
+            location: NavigationLocation.SIDEBAR,
+            orderIndex: 1,
+            accessType: NavigationAccessType.ROLE,
+            accessRole: Role.GAME_MODERATOR,
+            parentId: organizations.id,
+        },
+    });
+
+    const charactersWithClearances = await prisma.navigationItem.upsert({
+        where: {
+            path: '/organizations/characters-with-clearances',
+        },
+        update: {},
+        create: {
+            title: 'Characters with Clearances',
+            path: '/organizations/characters-with-clearances',
+            exact: true,
+            location: NavigationLocation.SIDEBAR,
+            orderIndex: 2,
+            accessType: NavigationAccessType.ROLE,
+            accessRole: Role.STAFF,
+            parentId: organizations.id,
+        },
+    });
+    //endregion
+
+    //region Sidebar - Galaxy Map
+    const mapEditor = await prisma.navigationItem.upsert({
+        where: {
+            path: '/map/edit',
+        },
+        update: {},
+        create: {
+            title: 'Map Editor',
+            path: '/map/edit',
+            exact: false,
+            location: NavigationLocation.SIDEBAR,
+            orderIndex: 1,
+            accessType: NavigationAccessType.ROLE_AND_TEAM,
+            accessRole: Role.ASSISTANT_ADMIN,
+            accessTeam: TeamType.MODERATION,
+            accessOverrideRole: Role.SYSTEM_ADMIN,
+            parentId: map.id,
+        },
+    });
+    //endregion
+
+    //region Sidebar - Politics
+    const senate = await prisma.navigationItem.upsert({
+        where: {
+            path: '/politics/senate',
+        },
+        update: {},
+        create: {
+            titleKey: 'politics.senate',
+            title: 'Senate',
+            path: '/politics/senate',
+            exact: false,
+            location: NavigationLocation.SIDEBAR,
+            orderIndex: 1,
+            accessType: NavigationAccessType.CUSTOM,
+            customAccessFunction: 'hasSenator',
+            accessRole: Role.GAME_MODERATOR,
+            accessTeam: TeamType.MODERATION,
+            accessOverrideRole: Role.ADMIN,
+            parentId: politics.id,
+        },
+    });
+
+    const committees = await prisma.navigationItem.upsert({
+        where: {
+            path: '/politics/committees',
+        },
+        update: {},
+        create: {
+            titleKey: 'politics.committees',
+            title: 'Senate Committees',
+            path: '/politics/committees',
+            exact: false,
+            location: NavigationLocation.SIDEBAR,
+            orderIndex: 2,
+            accessType: NavigationAccessType.CUSTOM,
+            customAccessFunction: 'senateLeadership',
+            accessRole: Role.ASSISTANT_ADMIN,
+            accessTeam: TeamType.MODERATION,
+            accessOverrideRole: Role.SYSTEM_ADMIN,
+            parentId: politics.id,
+        },
+    });
+
+    const highCouncil = await prisma.navigationItem.upsert({
+        where: {
+            path: '/politics/high-council',
+        },
+        update: {},
+        create: {
+            titleKey: 'politics.highCouncil',
+            title: 'High Council',
+            path: '/politics/high-council',
+            exact: false,
+            location: NavigationLocation.SIDEBAR,
+            orderIndex: 3,
+            accessType: NavigationAccessType.CUSTOM,
+            customAccessFunction: 'highCouncil',
+            accessRole: Role.GAME_MODERATOR,
+            accessTeam: TeamType.MODERATION,
+            accessOverrideRole: Role.ADMIN,
+            parentId: politics.id,
+        },
+    });
+    //endregion
+
+    //region Breadcrumb Only - Subroutes
+    const characterDetails = await prisma.navigationItem.upsert({
+        where: {
+            path: '/characters/:id',
+        },
+        update: {},
+        create: {
+            title: 'Character Details',
+            path: '/characters/:id',
+            exact: true,
+            location: NavigationLocation.BREADCRUMB_ONLY,
+            accessType: NavigationAccessType.AUTHENTICATED,
+            breadcrumbResolver: 'character_name',
+            parentId: characters.id,
+        },
+    });
+
+    const organizationDetails = await prisma.navigationItem.upsert({
+        where: {
+            path: '/organizations/:id',
+        },
+        update: {},
+        create: {
+            title: 'Organization Details',
+            path: '/organizations/:id',
+            exact: true,
+            location: NavigationLocation.BREADCRUMB_ONLY,
+            accessType: NavigationAccessType.AUTHENTICATED,
+            breadcrumbResolver: 'organization_name',
+            parentId: organizations.id,
+        },
+    });
+
+    const documentDetails = await prisma.navigationItem.upsert({
+        where: {
+            path: '/documents/view/:type/:id',
+        },
+        update: {},
+        create: {
+            title: 'Organization Details',
+            path: '/documents/view/:type/:id',
+            exact: true,
+            location: NavigationLocation.BREADCRUMB_ONLY,
+            accessType: NavigationAccessType.OPEN,
+            breadcrumbResolver: 'view_document_title',
+            parentId: documents.id,
+        },
+    });
     //endregion
     //endregion
 

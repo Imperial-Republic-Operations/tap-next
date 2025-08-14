@@ -1,4 +1,4 @@
-import { userHasAccess } from "@/lib/roles";
+import { roles, userHasAccess } from "@/lib/roles";
 import { prisma } from "@/lib/prisma";
 
 export type NavigationAccess = { type: 'open' }
@@ -21,7 +21,7 @@ export async function userHasNavigationAccess(access: NavigationAccess, user: an
         case 'open':
             return true;
         case 'authenticated':
-            return !!user;
+            return !!user && user.role !== roles[0];
         case 'role':
             return userHasAccess(access.role, user);
         case 'team':

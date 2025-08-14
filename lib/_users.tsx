@@ -206,3 +206,33 @@ export async function fetchAllTeams() {
         }
     });
 }
+
+export async function addUserToTeam(userId: string, teamId: string) {
+    return prisma.user.update({
+        where: { id: userId },
+        data: {
+            teams: {
+                connect: { id: BigInt(teamId) }
+            }
+        },
+        include: {
+            team: true,
+            teams: true
+        }
+    });
+}
+
+export async function removeUserFromTeam(userId: string, teamId: string) {
+    return prisma.user.update({
+        where: { id: userId },
+        data: {
+            teams: {
+                disconnect: { id: BigInt(teamId) }
+            }
+        },
+        include: {
+            team: true,
+            teams: true
+        }
+    });
+}

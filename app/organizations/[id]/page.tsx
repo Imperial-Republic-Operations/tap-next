@@ -50,11 +50,14 @@ export default function ViewOrganization({params}: {params: Promise<{id: string}
         activeCharacterId: string | undefined,
         organization: OrganizationWithTotalMembers,
     ): Promise<boolean> => {
+        if (user && userHasAccess(roles[5], user)) {
+            console.log('User has access', user);
+            return true;
+        }
+
         if (!activeCharacterId) return false;
 
         const members = organization.members;
-
-        if (user && userHasAccess(roles[5], user)) return true;
 
         const isOrgAdmin = members.some(
             (member: any) =>

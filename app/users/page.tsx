@@ -6,7 +6,8 @@ import { roles, userHasAccess } from '@/lib/roles';
 import { usersApi } from '@/lib/apiClient';
 import { classNames, getMultiWordCapitalization } from '@/lib/style';
 import Pagination from '@/components/Pagination';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import ManageTeamsModal from './_components/ManageTeamsModal';
 
 interface User {
     id: string;
@@ -32,6 +33,8 @@ export default function UsersHome() {
     const [search, setSearch] = useState('');
     const [roleFilter, setRoleFilter] = useState('');
     const [updatingRole, setUpdatingRole] = useState<string | null>(null);
+    const [showTeamsModal, setShowTeamsModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
     
     const { data: session, status } = useSession();
     const isAdmin = session?.user && userHasAccess(roles[5], session.user); // ADMIN level
@@ -67,16 +70,30 @@ export default function UsersHome() {
 
     const handleSearch = () => {
         setPage(0);
-        loadUsers();
+        void loadUsers();
     };
 
     const handlePageChange = (newPage: number) => {
         setPage(newPage);
     };
 
+    const handleManageTeams = (user: User) => {
+        setSelectedUser(user);
+        setShowTeamsModal(true);
+    };
+
+    const handleTeamsModalClose = () => {
+        setShowTeamsModal(false);
+        setSelectedUser(null);
+    };
+
+    const handleTeamsSuccess = () => {
+        // Could reload data here if needed, but teams don't affect the main user list
+    };
+
     useEffect(() => {
         if (isAdmin) {
-            loadUsers();
+            void loadUsers();
         }
     }, [page, isAdmin]);
 
@@ -142,7 +159,7 @@ export default function UsersHome() {
                         type="search"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                         placeholder="Search users..."
                         className="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-white dark:ring-gray-700"
                     />
@@ -268,12 +285,13 @@ export default function UsersHome() {
                                                     {new Date(user.createdAt).toLocaleDateString()}
                                                 </td>
                                                 <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                                    {/*<a
-                                                        href={`/users/${user.id}`}
-                                                        className="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300"
+                                                    <button
+                                                        onClick={() => handleManageTeams(user)}
+                                                        className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300"
                                                     >
-                                                        View<span className="sr-only">, {user.name || user.username}</span>
-                                                    </a>*/}
+                                                        <UserGroupIcon className="h-4 w-4" />
+                                                        Teams<span className="sr-only">, {user.name || user.username}</span>
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))
@@ -288,6 +306,16 @@ export default function UsersHome() {
             <div className="mt-6">
                 <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
             </div>
+
+            {selectedUser && (
+                <ManageTeamsModal
+                    isOpen={showTeamsModal}
+                    onClose={handleTeamsModalClose}
+                    userId={selectedUser.id}
+                    userName={selectedUser.name || selectedUser.username}
+                    onSuccess={handleTeamsSuccess}
+                />
+            )}
         </div>
     );
 }

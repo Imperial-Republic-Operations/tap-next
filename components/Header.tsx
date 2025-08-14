@@ -8,7 +8,6 @@ import {
     MenuItems
 } from "@headlessui/react";
 import { Bars3Icon, ChevronDownIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { roles } from "@/lib/roles";
 import { cookies } from "next/headers";
 import { signIn } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -20,96 +19,16 @@ import NotificationBell from "@/components/NotificationBell";
 import LogoutButton from "@/components/LogoutButton";
 import { getSession } from "@/lib/auth";
 import { getServerTranslations } from '@/lib/i18nServer';
-import { NavigationAccess, userHasNavigationAccess } from "@/lib/navigation";
+import { getNavigationItems, SerializableNavigationItem } from "@/lib/navigationDB";
+import { NavigationLocation, DropdownSection } from "@/lib/generated/prisma";
 
-type NavigationConfig = {
-    main: {
-            title: string;
-            route: string;
-            exact: boolean;
-            access: NavigationAccess
-            devOnly: boolean;
-        }[];
-    dropdown: {
-        title: string;
-        sections: {
-            label: string;
-            items: {
-                title: string;
-                route: string;
-                exact: boolean;
-                access: NavigationAccess;
-                devOnly: boolean;
-            }[]
-        }[];
-    };
-}
-
-function getNavigationConfig(t: any): NavigationConfig {
-    return {
-        main: [
-            { title: t.header.home, route: "/", exact: true, access: { type: 'open' }, devOnly: false },
-            { title: t.header.characters, route: "/characters", exact: false, access: { type: 'role', role: roles[1] }, devOnly: false },
-            { title: t.header.organizations, route: "/organizations", exact: false, access: { type: 'open' }, devOnly: false },
-            { title: t.header.documents, route: "/documents", exact: false, access: { type: 'open' }, devOnly: false },
-            { title: t.header.inventory, route: "/inventory", exact: false, access: { type: 'role', role: roles[1] }, devOnly: false },
-            { title: t.header.map, route: "/map", exact: false, access: { type: 'role', role: roles[1] }, devOnly: false },
-            { title: t.header.politics, route: "/politics", exact: false, access: { type: 'role', role: roles[1] }, devOnly: false },
-            {
-                title: t.header.force,
-                route: "/force",
-                exact: false,
-                access: {
-                    type: 'custom',
-                    customAccess: async (user) => {
-                        if (!user) return false;
-
-                        const forceAwareCharacters = await prisma.character.count({
-                            where: {
-                                userId: user.id,
-                                forceProfile: {
-                                    aware: true,
-                                },
-                            },
-                        });
-
-                        return forceAwareCharacters > 0;
-                    },
-                    overrideAccess: {
-                        type: 'role-and-team',
-                        role: roles[2],
-                        team: 'force',
-                        overrideRole: roles[5],
-                    },
-                },
-                devOnly: false
-            },
-        ],
-        dropdown: {
-            title: t.header.more,
-            sections: [
-                {
-                    label: t.header.references,
-                    items: [
-                        { title: t.header.rules, route: "/rules", exact: false, access: { type: 'open' }, devOnly: false },
-                        { title: t.header.staff, route: "/staff", exact: false, access: { type: 'open' }, devOnly: false },
-                        { title: t.header.patchNotes, route: "/patch-notes", exact: false, access: { type: 'open' }, devOnly: false },
-                    ]
-                },
-                {
-                    label: t.header.administration,
-                    items: [
-                        { title: t.header.userAdministration, route: "/users", exact: false, access: { type: 'role', role: roles[4] }, devOnly: false },
-                        { title: t.header.calendarSettings, route: "/calendar", exact: false, access: { type: 'role', role: roles[3] }, devOnly: false },
-                        { title: t.header.systemSettings, route: "/system", exact: false, access: { type: 'role', role: roles[6] }, devOnly: false },
-                        { title: t.header.notificationsTest, route: "/notifications/test", exact: false, access: { type: 'role', role: roles[6] }, devOnly: true },
-                        { title: t.header.worklog, route: "/worklog", exact: false, access: { type: 'team', team: 'operations', overrideRole: roles[6] }, devOnly: true },
-                    ]
-                },
-            ],
-        }
-    };
-}
+type DropdownConfig = {
+    title: string;
+    sections: {
+        label: string;
+        items: SerializableNavigationItem[];
+    }[];
+};
 
 function getDropdownConfig(t: any) {
     return [
@@ -121,12 +40,35 @@ function getDropdownConfig(t: any) {
 export default async function Header() {
     const {session, status} = await getSession();
     const t = await getServerTranslations(session?.user?.id);
-    const navigationConfig = getNavigationConfig(t);
+    
+    // Get navigation items from database
+    const mainNavItems = await getNavigationItems(NavigationLocation.HEADER_MAIN, session?.user);
+    const dropdownNavItems = await getNavigationItems(NavigationLocation.HEADER_DROPDOWN, session?.user);
+    
+    // Group dropdown items by section
+    const dropdownSections: { [key: string]: SerializableNavigationItem[] } = {};
+    dropdownNavItems.forEach(item => {
+        const section = item.dropdownSection || 'REFERENCES'; // default section
+        if (!dropdownSections[section]) {
+            dropdownSections[section] = [];
+        }
+        dropdownSections[section].push(item);
+    });
+    
+    // Create dropdown config with proper section labels
+    const dropdownConfig: DropdownConfig = {
+        title: t.header.more,
+        sections: Object.entries(dropdownSections).map(([sectionKey, items]) => ({
+            label: sectionKey === 'REFERENCES' ? t.header.references : 
+                   sectionKey === 'ADMINISTRATION' ? t.header.administration : 
+                   sectionKey,
+            items
+        }))
+    };
+    
     const dropdown = getDropdownConfig(t);
-    const allNavigationItems = [
-        ...navigationConfig.main,
-        ...navigationConfig.dropdown.sections.flatMap(section => section.items),
-    ];
+    const allNavigationItems = [...mainNavItems, ...dropdownNavItems];
+    
     let characters: { id: bigint, name: string, avatarLink: string | null }[] = [];
     let activeCharacter: { id: bigint, name: string, avatarLink: string | null } | undefined = undefined;
     let hasNotifications = false;
@@ -168,14 +110,7 @@ export default async function Header() {
         }
     }
 
-    const visibleDropdownSections = navigationConfig.dropdown.sections
-        .map(section => ({
-            ...section,
-            items: section.items.filter(async item => await userHasNavigationAccess(item.access, session?.user) && ((item.devOnly && process.env.ENVIRONMENT !== "production") || !item.devOnly))
-        }))
-        .filter(section => section.items.length > 0);
-
-    const hasVisibleDropdownItems = visibleDropdownSections.length > 0;
+    const hasVisibleDropdownItems = dropdownConfig.sections.length > 0;
 
     return (
         <Disclosure as="nav" className="bg-white shadow-sm dark:bg-gray-800 dark:shadow-none">
@@ -199,23 +134,26 @@ export default async function Header() {
                         </div>
                         <div className="hidden sm:ml-6 sm:block">
                             <div className="flex space-x-4">
-                                {navigationConfig.main
-                                    .filter(async (item) => await userHasNavigationAccess(item.access, session?.user) && ((item.devOnly && process.env.NODE_ENV !== "production") || !item.devOnly))
-                                    .map((item) => (
-                                        <NavbarLink key={item.title} href={item.route} exact={item.exact}>
-                                            {item.title}
-                                        </NavbarLink>
-                                    ))}
+                                {mainNavItems.map((item) => (
+                                    <NavbarLink key={item.id} href={item.path} exact={item.exact}>
+                                        {item.titleKey ? (t as any)[item.titleKey.split('.')[0]]?.[item.titleKey.split('.')[1]] || item.title : item.title}
+                                        {item.badge && item.badge > 0 && (
+                                            <span className="ml-2 inline-flex items-center rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
+                                                {item.badge > 10 ? '10+' : item.badge}
+                                            </span>
+                                        )}
+                                    </NavbarLink>
+                                ))}
 
                                 {hasVisibleDropdownItems && (
                                     <Menu as="div" className="relative">
                                         <MenuButton className="inline-flex items-center gap-x-1 text-sm font-medium px-3 py-2 border-b-2 border-transparent hover:border-gray-300 hover:text-gray-700 dark:hover:text-white dark:hover:bg-gray-700 text-gray-500 dark:rounded-md dark:text-gray-300 dark:border-none">
-                                            {navigationConfig.dropdown.title}
+                                            {dropdownConfig.title}
                                             <ChevronDownIcon className="w-4 h-4" />
                                         </MenuButton>
 
                                         <MenuItems className="absolute left-0 z-10 mt-2 w-56 origin-top-left rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-none dark:bg-gray-800 dark:ring-gray-700">
-                                            {visibleDropdownSections.map((section, sectionIdx) => (
+                                            {dropdownConfig.sections.map((section, sectionIdx) => (
                                                 <div key={section.label}>
                                                     {sectionIdx > 0 && (
                                                         <div className="border-t border-gray-100 dark:border-gray-700" />
@@ -228,9 +166,9 @@ export default async function Header() {
                                                         </div>
                                                     )}
                                                     {section.items.map((item) => (
-                                                        <MenuItem key={item.title}>
-                                                            <a href={item.route} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
-                                                                {item.title}
+                                                        <MenuItem key={item.id}>
+                                                            <a href={item.path} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+                                                                {item.titleKey ? (t as any)[item.titleKey.split('.')[0]]?.[item.titleKey.split('.')[1]] || item.title : item.title}
                                                             </a>
                                                         </MenuItem>
                                                     ))}
@@ -306,13 +244,11 @@ export default async function Header() {
 
             <DisclosurePanel className="sm:hidden">
                 <div className="space-y-1 px-2 pt-2 pb-3">
-                    {allNavigationItems
-                        .filter(async (item) => await userHasNavigationAccess(item.access, session?.user) && ((item.devOnly && process.env.NODE_ENV !== "production") || !item.devOnly))
-                        .map((item) => (
-                            <MobileNavbarLink key={item.title} href={item.route} exact={item.exact}>
-                                {item.title}
-                            </MobileNavbarLink>
-                        ))}
+                    {allNavigationItems.map((item) => (
+                        <MobileNavbarLink key={item.id} href={item.path} exact={item.exact}>
+                            {item.titleKey ? (t as any)[item.titleKey.split('.')[0]]?.[item.titleKey.split('.')[1]] || item.title : item.title}
+                        </MobileNavbarLink>
+                    ))}
                 </div>
             </DisclosurePanel>
         </Disclosure>
